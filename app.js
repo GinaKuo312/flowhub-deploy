@@ -1,10 +1,10 @@
 // ========== SUPABASE CONFIG ==========
-const SUPABASE_URL = 'https://zqwzmlythbcspoqfmamt.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxd3ptbHl0aGJjc3BvcWZtYW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzIwMzgsImV4cCI6MjA5MDc0ODAzOH0.64Qp1tqtZswhidf16QhX11_y614DDZHM4AUDKHFa-GM';
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+var SUPABASE_URL = 'https://zqwzmlythbcspoqfmamt.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxd3ptbHl0aGJjc3BvcWZtYW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzIwMzgsImV4cCI6MjA5MDc0ODAzOH0.64Qp1tqtZswhidf16QhX11_y614DDZHM4AUDKHFa-GM';
+var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // ========== DATA STRUCTURES ==========
-const DEFAULT_DATA = {
+var DEFAULT_DATA = {
     users: [
         { id: 'u1', name: 'Gina', phone: '0900000001', role: 'admin', password: 'Aa1234', active: true, channel: 'FlowPay' },
         { id: 'u2', name: '王經理', phone: '0900000002', role: 'manager', password: '1234', active: true, channel: 'FlowPay' },
@@ -2511,7 +2511,4 @@ var app = {
 // ========== EXPOSE TO GLOBAL SCOPE ==========
 window.app = app;
 
-// ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-    app.init();
-});
+// Init is called by bootstrap script in admin.html after this file loads
