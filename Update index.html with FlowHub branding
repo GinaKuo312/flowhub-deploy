@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="FlowHub - 分期成交決策系統。幫助零售店舖輕鬆管理分期付款申請與風險評估。">
-    <title>FlowHub - 分期成交決策系統</title>
+    <meta name="description" content="FlowHub - 無卡分期智能決策平台。幫助零售店舖輕鬆管理分期付款申請與風險評估。">
+    <title>FlowHub - 無卡分期智能決策平台</title>
     <style>
         * {
             margin: 0;
@@ -402,8 +402,7 @@
         <div class="header-container">
             <div>
                 <div class="logo">FlowHub</div>
-                <div class="logo-cn">分期成交決策系統</div>
-            </div>
+                <d<div class="logo-cn">無卡分期智能決策平台</div>           </div>
             <nav>
                 <a href="#features">功能特色</a>
                 <a href="#cta">立即開始</a>
@@ -415,14 +414,15 @@
     <section class="hero">
         <div class="hero-container">
             <h1>FlowHub</h1>
-            <p class="tagline">讓分期成交更簡單</p>
+            <p class="tagline">讓分期成讓無卡分期，安心又順利
             <p>
-                FlowHub 是專為醫美、保健補給、課程和高客單零售店舖設計的智能分期管理系統。
-                輕鬆比較金融公司方案、管理客戶申請、做出更聰明的分期決策。
+                FlowHub 是專為醫美、保健補給、課程等高品質消費場景打造的無卡分期智能決策平台。
+                我們與合作店家攜手，為您專業比對多家金融公司方案、精準匹配最適方案，有效提升核准率。
+                全程不預先查詢您的信用紀錄，讓您安心評估、放心申辦。
             </p>
             <div class="hero-buttons">
                 <a href="/admin" class="btn btn-primary">管理後台登入</a>
-                <a href="/apply" class="btn btn-secondary">免費評估申請</a>
+                <a href="/apply" class="btn btn-secondary">免費過件評估</a>
             </div>
         </div>
     </section>
@@ -431,46 +431,46 @@
     <section class="features" id="features">
         <div class="features-container">
             <h2 class="section-title">核心功能</h2>
-            <p class="section-subtitle">提升分期決策效率，讓交易更簡單</p>
+            <p class="section-subtitle">專業金融科技，讓每一筆分期都更順利</p>
 
             <div class="features-grid">
                 <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>安心零查詢</h3>
+                    <p>
+                        初步評估階段絕不查詢您的信用紀錄，
+                        不影響您的聯徵分數。
+                        先了解方案、確認合適後，才進入正式流程。
+                    </p>
+                </div>
+
+                <div class="feature-card">
                     <div class="feature-icon">📊</div>
-                    <h3>智慧試算</h3>
+                    <h3>智慧方案比對</h3>
                     <p>
-                        一秒鐘計算多家金融公司的分期方案，
-                        自動比較利率、手續費和還款條件，
-                        幫助客戶快速做出最佳選擇。
+                        同步比對多家合作金融公司的無卡分期方案，
+                        自動計算月付金、利率與手續費，
+                        為您精準推薦最優方案，有效提升過件率。
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">⚖️</div>
-                    <h3>風險評估</h3>
+                    <div class="feature-icon">🤝</div>
+                    <h3>店家專業協辦</h3>
                     <p>
-                        智能化分析客戶信用風險，
-                        自動評估核准機率，
-                        降低壞帳風險，保護店舖利益。
+                        由合作店家的專業人員全程陪伴，
+                        協助您準備申請資料、解答疑問，
+                        讓無卡分期申辦過程輕鬆無壓力。
                     </p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h3>CRM 管理</h3>
+                    <div class="feature-icon">⚡</div>
+                    <h3>快速核准回覆</h3>
                     <p>
-                        集中管理客戶信息與申請進度，
-                        追蹤分期案件全生命週期，
-                        提升客戶體驗與服務品質。
-                    </p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3>多通路管理</h3>
-                    <p>
-                        無縫整合線上線下銷售渠道，
-                        統一管理所有分期申請，
-                        實現全渠道運營戰略。
+                        透過智能評估系統預先篩選最適方案，
+                        大幅縮短審核等待時間，
+                        讓您的消費計畫不再被耽擱。
                     </p>
                 </div>
             </div>
@@ -480,14 +480,14 @@
     <!-- CTA Section -->
     <section class="cta-section" id="cta">
         <div class="cta-container">
-            <h2>準備好簡化你的分期管理了嗎？</h2>
+            <h2>想了解自己適合哪種分期方案？</h2>
             <p>
-                加入數百家零售店舖，透過 FlowHub 提升分期成交率與客戶滿意度。
-                免費評估你的店舖需求，找到最適合的解決方案。
+                只需幾分鐘填寫基本資料，我們將為您免費評估最適合的無卡分期方案。
+                全程不查詢信用紀錄、不收取任何費用，專業團隊為您把關每一個環節。
             </p>
             <div class="cta-buttons">
-                <a href="/admin" class="btn btn-light">進入管理後台</a>
-                <a href="/apply" class="btn btn-outline-light">免費評估</a>
+                <a href="/apply" class="btn btn-light">立即免費評估</a>
+                <a href="/admin" class="btn btn-outline-light">合作店家登入</a>
             </div>
         </div>
     </section>
@@ -495,7 +495,7 @@
     <!-- Footer -->
     <footer>
         <p>&copy; 2026 FlowHub. 保留所有權利。</p>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">分期成交決策系統</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">無卡分期智能決策平台</p>
     </footer>
 </body>
 </html>
