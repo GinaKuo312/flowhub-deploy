@@ -1,0 +1,4367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="app-name" content="FlowHub">
+    <meta name="theme-color" content="#8b7355">
+    <title>FlowHub - 分期成交決策系統</title>
+    <style>
+        :root {
+            --brand: #8b7355;
+            --brand-light: #a08968;
+            --brand-dark: #6b5740;
+            --gold: #c9a96e;
+            --gold-light: #dcc9a5;
+            --gold-lighter: #efe3cc;
+            --gold-pale: #f8f2e8;
+            --gold-deep: #b8944a;
+            --champagne: #d4b896;
+            --champagne-light: #e8d5b8;
+            --cream: #faf7f2;
+            --cream-dark: #f2ece3;
+            --cream-deep: #e8dfd3;
+            --text: #4a4240;
+            --text-light: #7a706a;
+            --text-muted: #a89e94;
+            --sage: #6a8a6a;
+            --sage-bg: #eef5ee;
+            --sage-lt: #d4e8d4;
+            --sage-dark: #3e6e3e;
+            --red: #c0392b;
+            --red-bg: #fce8e6;
+            --border-color: #e8dfd3;
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(139, 115, 85, 0.12);
+            --shadow-glow: 0 0 20px rgba(201, 169, 110, 0.15);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Login Screen */
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(160deg, #f8f2e8 0%, #efe3cc 40%, #e8d5b8 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 44px 36px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(201, 169, 110, 0.15);
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            background: var(--cream);
+            color: var(--text);
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-error {
+            color: var(--red);
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .demo-accounts {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .demo-accounts p {
+            margin-bottom: 8px;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--cream);
+        }
+
+        .app-container.active {
+            display: flex;
+        }
+
+        .app-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 50%, var(--brand-light) 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(107, 87, 64, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .app-user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .role-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Tabs */
+        .tab-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 70px;
+            padding-top: 12px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 0 16px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+            border-top: none;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+            padding: 4px 0 env(safe-area-inset-bottom, 0);
+        }
+
+        .nav-item {
+            flex: 1;
+            padding: 12px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-bottom: 3px solid transparent;
+            border-top: 2px solid transparent;
+        }
+
+        .nav-item.active {
+            color: var(--brand);
+            border-top: 2px solid var(--gold);
+            font-weight: 600;
+            border-bottom: none;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        /* Cards & Panels */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 18px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(232, 223, 211, 0.6);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-bottom: 14px;
+            padding-left: 4px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, var(--gold) 0%, var(--brand) 100%);
+            border-radius: 2px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            background: white;
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.12);
+            background: white;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-block;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--gold-deep) 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(139, 115, 85, 0.35);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--cream-dark);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cream-deep);
+        }
+
+        .btn-danger {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .btn-danger:hover {
+            background: #fcd4d0;
+        }
+
+        .btn-success {
+            background: var(--sage-bg);
+            color: var(--sage-dark);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-block {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .btn-o {
+            background: var(--cream-dark);
+            color: var(--text);
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .btn-o:hover {
+            background: var(--cream-deep);
+        }
+
+        .btn-d {
+            background: var(--red-bg);
+            color: var(--red);
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+
+        .btn-d:hover {
+            background: #fcd4d0;
+        }
+
+        .xb {
+            background: none;
+            border: none;
+            color: var(--red);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .xb:hover {
+            background: var(--red-bg);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-待處理 {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-審核中 {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-已核准 {
+            background: var(--sage-bg);
+            color: var(--sage-dark);
+        }
+
+        .badge-已撥款 {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-婉拒 {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        .grade-A {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .grade-B {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .grade-C {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .grade-D {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .grade-E {
+            background: var(--red-bg);
+            color: var(--red);
+        }
+
+        /* Pill Button Choices */
+        .choices-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .choice {
+            padding: 10px 18px;
+            border: 2px solid var(--border-color);
+            border-radius: 24px;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .choice:hover {
+            border-color: var(--brand);
+            background: var(--cream-dark);
+        }
+
+        .choice.on {
+            background: var(--sage);
+            color: white;
+            border-color: var(--sage);
+            box-shadow: 0 2px 8px rgba(106, 138, 106, 0.3);
+        }
+
+        .choice.on-warn {
+            background: var(--red);
+            color: white;
+            border-color: var(--red);
+            box-shadow: 0 2px 8px rgba(192, 57, 43, 0.3);
+        }
+
+        .choice.on-green {
+            background: var(--sage);
+            color: white;
+            border-color: var(--sage);
+            box-shadow: 0 2px 8px rgba(106, 138, 106, 0.3);
+        }
+
+        /* Store Banner */
+        .store-banner {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Calculator */
+        .calculator-result {
+            background: linear-gradient(135deg, var(--gold-pale) 0%, var(--cream-dark) 100%);
+            border: 1px solid var(--gold-light);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--gold-light);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .result-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--brand-dark);
+        }
+
+        .irr-value {
+            color: var(--gold-deep);
+        }
+
+        /* Plan Cards and Tables */
+        .plan-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .plan-card-header {
+            padding: 12px 16px;
+            margin: -16px -16px 12px -16px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .plan-card-header.zero-rate {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+        }
+
+        .plan-card-header.general {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+        }
+
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .plan-table th {
+            background: var(--cream-dark);
+            padding: 10px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .plan-table th.period,
+        .plan-table th.monthly {
+            font-weight: 700;
+        }
+
+        .plan-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--gold-light);
+            color: var(--text);
+        }
+
+        .plan-table td.period {
+            font-weight: 700;
+        }
+
+        .plan-table td.monthly {
+            font-weight: 700;
+            color: var(--brand-dark);
+            font-size: 14px;
+        }
+
+        .plan-table td.total {
+            font-weight: 600;
+        }
+
+        .plan-table tr:hover {
+            background: var(--gold-pale);
+        }
+
+        .plan-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .disbursement-toggle {
+            background: none;
+            border: none;
+            color: var(--brand-dark);
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: underline;
+            padding: 4px 0;
+            margin-top: 8px;
+        }
+
+        .disbursement-toggle:hover {
+            color: var(--brand);
+        }
+
+        .disbursement-row {
+            display: none;
+        }
+
+        .disbursement-row.show {
+            display: table-row;
+        }
+
+        /* Risk Score Panel */
+        .risk-panel {
+            background: linear-gradient(135deg, var(--sage-bg) 0%, #f0f5f0 100%);
+            border: 1px solid var(--sage-lt);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .risk-score-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .risk-score-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--sage-dark);
+        }
+
+        .risk-grade-badge {
+            font-size: 28px;
+            font-weight: 800;
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+        }
+
+        .risk-factors-list {
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        /* Advice Panel */
+        .advice-panel {
+            background: linear-gradient(135deg, var(--gold-pale) 0%, white 100%);
+            border: 1px solid var(--gold-light);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            margin-top: 16px;
+        }
+
+        .advice-layer {
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+        }
+
+        .advice-layer:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .advice-layer-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--brand-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .advice-layer-content {
+            font-size: 13px;
+            line-height: 1.8;
+            color: var(--text);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 6px;
+        }
+
+        .approval-rate-bar {
+            background: var(--border-color);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .approval-rate-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sage) 0%, var(--sage-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            transition: width 0.5s;
+        }
+
+        /* Customer Cards */
+        .customer-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--gold);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .customer-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+            border-left-color: var(--brand);
+        }
+
+        .customer-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .customer-phone {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .customer-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 12px;
+        }
+
+        .customer-meta-item {
+            color: var(--text-light);
+        }
+
+        /* Modal/Drawer */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            z-index: 1001;
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .modal-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            background: white;
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+            box-shadow: -8px 0 30px rgba(0,0,0,0.12);
+            z-index: 1001;
+            overflow-y: auto;
+            transition: right 0.3s;
+        }
+
+        .drawer.active {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-light) 100%);
+            color: white;
+        }
+
+        .drawer-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .drawer-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .drawer-body {
+            padding: 16px;
+        }
+
+        /* Search & Filter */
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .filter-tab.active {
+            background: var(--brand);
+            color: white;
+            border-color: var(--brand);
+            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.3);
+        }
+
+        /* Charts (CSS-based) */
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 8px;
+        }
+
+        .chart-bar-label {
+            width: 100px;
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .chart-bar-container {
+            flex: 1;
+            height: 24px;
+            background: var(--cream-dark);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand) 0%, var(--gold) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .chart-bar-value {
+            width: 50px;
+            text-align: right;
+            font-size: 12px;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: var(--radius);
+            text-align: center;
+            padding: 20px 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(232, 223, 211, 0.6);
+            transition: var(--transition);
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--brand) 0%, var(--gold-deep) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .kpi-change {
+            font-size: 11px;
+            color: var(--sage-dark);
+        }
+
+        /* Collapse */
+        .collapse-header {
+            padding: 12px;
+            background: var(--cream-dark);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .collapse-content {
+            display: none;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .collapse-content.active {
+            display: block;
+        }
+
+        .collapse-icon {
+            transition: transform 0.2s;
+        }
+
+        .collapse-icon.active {
+            transform: rotate(180deg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .modal {
+                width: 95%;
+                max-height: 80vh;
+            }
+
+            .drawer {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-row { flex-direction: column; }
+            .modal { width: 95%; margin: 10px; }
+            /* Table horizontal scroll on mobile */
+            .admin-table, .plan-table { display: block; overflow-x: auto; white-space: nowrap; }
+            /* Ensure content doesn't hide behind bottom nav */
+            .tab-container { padding-bottom: 85px; }
+            /* Chart labels responsive */
+            .chart-bar-label { min-width: 60px; max-width: 80px; font-size: 11px; }
+            /* KPI grid 2 columns on mobile */
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            /* Filter tabs scrollable */
+            .filter-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+            .filter-tab { white-space: nowrap; flex-shrink: 0; }
+        }
+
+        /* Admin Tables */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .admin-table th {
+            background: var(--cream-dark);
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .admin-table td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text);
+        }
+
+        .admin-table tr:hover {
+            background: var(--gold-pale);
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-muted {
+            color: var(--text-muted);
+        }
+
+        .text-small {
+            font-size: 12px;
+        }
+
+        .mt-2 {
+            margin-top: 12px;
+        }
+
+        .mb-2 {
+            margin-bottom: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flex-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Store/Channel FC Plan Editor */
+        .st-fc-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .st-fc-hdr {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: var(--cream-dark);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .st-fc-acts {
+            display: flex;
+            gap: 6px;
+        }
+
+        .st-fc-plan-list {
+            background: white;
+        }
+
+        .st-fc-plan-hdr {
+            display: grid;
+            gap: 6px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--cream);
+        }
+
+        .st-fc-plan-row {
+            display: grid;
+            gap: 6px;
+            align-items: center;
+            padding: 8px 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .st-fc-plan-row input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .st-fc-plan-row .pp {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .st-fc-add {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 8px 12px;
+            border-top: 1px solid var(--border-color);
+            background: var(--cream);
+        }
+
+        .st-fc-add span {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .st-fc-add select {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .st-fc-add button {
+            flex: 1;
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        .modal-body {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto;
+            max-width: 360px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .toast.toast-success {
+            background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+            color: white;
+        }
+
+        .toast.toast-error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .toast.toast-warn {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+            color: white;
+        }
+
+        .toast.toast-info {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+            color: white;
+        }
+
+        .toast.toast-out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-20px) scale(0.9); }
+        }
+
+        /* Smooth scrollbar */
+        .tab-container::-webkit-scrollbar { width: 4px; }
+        .tab-container::-webkit-scrollbar-track { background: transparent; }
+        .tab-container::-webkit-scrollbar-thumb { background: var(--champagne); border-radius: 2px; }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="login-logo">FlowHub</div>
+                <div class="login-subtitle">讓每一筆分期，都成為信任的開始</div>
+            </div>
+            <input type="text" id="loginPhone" class="login-input" placeholder="手機號碼">
+            <input type="password" id="loginPassword" class="login-input" placeholder="密碼">
+            <button class="login-btn" onclick="app.login()">登入</button>
+            <div id="loginError" class="login-error"></div>
+            <div class="demo-accounts">
+                <p><strong>示範帳號：</strong></p>
+                <p>👤 <strong>業務</strong>：0900000003 / 1234</p>
+                <p>👤 <strong>主管</strong>：0900000002 / 1234</p>
+                <p>👤 <strong>總控</strong>：0900000001 / Aa1234</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="appContainer" class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">FlowHub</div>
+            <div class="app-user-info">
+                <span id="currentUserName">User</span>
+                <span class="role-badge" id="currentRoleBadge">Role</span>
+                <button class="logout-btn" onclick="app.logout()">登出</button>
+            </div>
+        </div>
+
+        <!-- Tab Content Container -->
+        <div class="tab-container">
+            <!-- Tab 1: Calculator -->
+            <div id="tab1" class="tab-content active">
+                <div class="section-title">成交試算</div>
+                <div class="card">
+                    <div class="form-group">
+                        <div class="form-label">選擇店家</div>
+                        <select id="storeSelector" class="form-select" onchange="app.updateStoreBanner()">
+                            <option value="">-- 請選擇店家 --</option>
+                        </select>
+                    </div>
+                    <div id="storeBanner" class="store-banner" style="display: none;"></div>
+                </div>
+
+                <div class="card">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <div class="form-label">客戶姓名</div>
+                            <input type="text" id="calcName" class="form-input" placeholder="如：王小明">
+                        </div>
+                        <div class="form-group">
+                            <div class="form-label">手機號碼</div>
+                            <input type="text" id="calcPhone" class="form-input" placeholder="0900000000">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-label">購買金額 (NT$)</div>
+                        <input type="text" id="calcAmount" class="form-input" placeholder="輸入金額">
+                    </div>
+                    <div class="form-group">
+                        <div class="form-label">分期公司</div>
+                        <select id="calcFC" class="form-select">
+                            <option value="">-- 選擇分期公司 --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="calcZeroRate" onchange="app.updateCalculation()">
+                            <span style="font-size: 14px;">零利率方案</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Calculation Results -->
+                <div id="calcResults" class="calculator-result" style="display: none;"></div>
+
+                <!-- Import Customer Data -->
+                <div class="card" style="margin-bottom: 12px; border-left: 3px solid var(--gold);">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                        <span style="font-size: 18px;">📥</span>
+                        <span style="font-weight: 600; font-size: 14px;">匯入客戶填單資料</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <input type="text" id="importPhone" class="form-input" placeholder="輸入客戶手機號碼" style="flex:1; min-width: 140px; margin:0;">
+                        <button class="btn btn-primary" onclick="app.importCustomerData()" style="white-space: nowrap;">查詢帶入</button>
+                    </div>
+                    <div id="importStatus" style="font-size: 12px; margin-top: 8px; color: var(--text-muted);"></div>
+                </div>
+
+                <!-- Risk Scoring Section -->
+                <div class="section-title">風控快篩</div>
+                <div class="card">
+                    <div class="collapse-header" onclick="app.toggleCollapse('riskSection')">
+                        <span>點擊展開風控評分</span>
+                        <span class="collapse-icon" id="riskIcon">▼</span>
+                    </div>
+                    <div id="riskSection" class="collapse-content">
+                        <!-- Section: 信用狀況 -->
+                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--brand-dark); margin-bottom: 12px;">信用狀況</div>
+
+                            <!-- Q1: 警示戶 -->
+                            <div class="form-group">
+                                <div class="form-label">是否為警示戶？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskAlert', '是', this)">是</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskAlert', '否', this)">否</button>
+                                </div>
+                                <input type="hidden" id="riskAlert" value="否">
+                            </div>
+
+                            <!-- Q2: 信用卡 -->
+                            <div class="form-group">
+                                <div class="form-label">是否曾辦過信用卡？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskHasCC', '有辦過', this); app.updateRiskForm();">有辦過</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskHasCC', '沒有', this); app.updateRiskForm();">沒有</button>
+                                </div>
+                                <input type="hidden" id="riskHasCC" value="沒有">
+                            </div>
+
+                            <!-- Q2a: 信用卡銀行（條件顯示） -->
+                            <div id="ccBankGroup" style="display: none; margin-left: 16px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div class="form-group">
+                                    <div class="form-label">信用卡銀行（可填多家）</div>
+                                    <input type="text" id="riskCCBanks" class="form-input" placeholder="如：中信、台新、國泰">
+                                </div>
+
+                                <!-- Q2b: 信用卡繳款狀況 -->
+                                <div class="form-group">
+                                    <div class="form-label">信用卡繳款狀況</div>
+                                    <div class="choices-group">
+                                        <button class="choice on" onclick="app.selectRiskChoice('riskCCStatus', '正常全額繳清', this)">正常全額繳清</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskCCStatus', '繳最低應繳', this)">繳最低應繳</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskCCStatus', '有卡沒在用', this)">有卡沒在用</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskCCStatus', '被停卡', this)">被停卡</button>
+                                    </div>
+                                    <input type="hidden" id="riskCCStatus" value="正常全額繳清">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: 名下資產 -->
+                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--brand-dark); margin-bottom: 12px;">名下資產</div>
+
+                            <!-- Q3: 汽車 -->
+                            <div class="form-group">
+                                <div class="form-label">名下有無汽車？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskHasCar', '是', this); app.updateRiskForm();">是</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskHasCar', '否', this); app.updateRiskForm();">否</button>
+                                </div>
+                                <input type="hidden" id="riskHasCar" value="否">
+                            </div>
+
+                            <!-- Q3a: 汽車詳情（條件顯示） -->
+                            <div id="carDetailsGroup" style="display: none; margin-left: 16px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div class="form-group">
+                                    <div class="form-label">繳款時間</div>
+                                    <div class="choices-group">
+                                        <button class="choice" onclick="app.selectRiskChoice('riskCarTime', '未滿6期', this)">未滿6期</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskCarTime', '繳款1年以上', this)">繳款1年以上</button>
+                                    </div>
+                                    <input type="hidden" id="riskCarTime" value="">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">繳款品質</div>
+                                    <div class="choices-group">
+                                        <button class="choice" onclick="app.selectRiskChoice('riskCarQuality', '正常繳款', this)">正常繳款</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskCarQuality', '偶爾遲繳', this)">偶爾遲繳</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskCarQuality', '常常遲繳', this)">常常遲繳</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskCarQuality', '已繳清', this)">已繳清</button>
+                                    </div>
+                                    <input type="hidden" id="riskCarQuality" value="">
+                                </div>
+                            </div>
+
+                            <!-- Q4: 機車 -->
+                            <div class="form-group">
+                                <div class="form-label">名下有無機車？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskHasMoto', '是', this); app.updateRiskForm();">是</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskHasMoto', '否', this); app.updateRiskForm();">否</button>
+                                </div>
+                                <input type="hidden" id="riskHasMoto" value="否">
+                            </div>
+
+                            <!-- Q4a: 機車詳情（條件顯示） -->
+                            <div id="motoDetailsGroup" style="display: none; margin-left: 16px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div class="form-group">
+                                    <div class="form-label">繳款時間</div>
+                                    <div class="choices-group">
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMotoTime', '未滿6期', this)">未滿6期</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMotoTime', '繳款1年以上', this)">繳款1年以上</button>
+                                    </div>
+                                    <input type="hidden" id="riskMotoTime" value="">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">繳款品質</div>
+                                    <div class="choices-group">
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMotoQuality', '正常繳款', this)">正常繳款</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskMotoQuality', '偶爾遲繳', this)">偶爾遲繳</button>
+                                        <button class="choice on-warn" onclick="app.selectRiskChoice('riskMotoQuality', '常常遲繳', this)">常常遲繳</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMotoQuality', '已繳清', this)">已繳清</button>
+                                    </div>
+                                    <input type="hidden" id="riskMotoQuality" value="">
+                                </div>
+                            </div>
+
+                            <!-- Q5: 不動產 -->
+                            <div class="form-group">
+                                <div class="form-label">名下有無不動產？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskHasProperty', '是', this)">是</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskHasProperty', '否', this)">否</button>
+                                </div>
+                                <input type="hidden" id="riskHasProperty" value="否">
+                            </div>
+                        </div>
+
+                        <!-- Section: 現有負擔 -->
+                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--brand-dark); margin-bottom: 12px;">現有負擔</div>
+
+                            <!-- Q6: 最近有沒有送過銀行 -->
+                            <div class="form-group">
+                                <div class="form-label">最近有沒有送過銀行或分期呢？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskRecentSubmit', '有', this); app.updateRiskForm();">有</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskRecentSubmit', '沒有', this); app.updateRiskForm();">沒有</button>
+                                </div>
+                                <input type="hidden" id="riskRecentSubmit" value="沒有">
+                            </div>
+
+                            <!-- Q6a: 資金/消費分期（條件顯示） -->
+                            <div id="recentSubmitGroup" style="display: none; margin-left: 16px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div class="form-group">
+                                    <div class="form-label">資金需求方面</div>
+                                    <div class="choices-group">
+                                        <button class="choice on" onclick="app.selectRiskChoice('riskRecentFinance', '0次', this)">0次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentFinance', '1次', this)">1次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentFinance', '2次', this)">2次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentFinance', '3次以上', this)">3次以上</button>
+                                    </div>
+                                    <input type="hidden" id="riskRecentFinance" value="0次">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">購買商品消費分期方面</div>
+                                    <div class="choices-group">
+                                        <button class="choice on" onclick="app.selectRiskChoice('riskRecentConsume', '0次', this)">0次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentConsume', '1次', this)">1次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentConsume', '2次', this)">2次</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskRecentConsume', '3次以上', this)">3次以上</button>
+                                    </div>
+                                    <input type="hidden" id="riskRecentConsume" value="0次">
+                                </div>
+                            </div>
+
+                            <!-- Q7: 目前是否有貸款或分期 -->
+                            <div class="form-group">
+                                <div class="form-label">目前是否有貸款或分期？</div>
+                                <div class="choices-group">
+                                    <button class="choice" onclick="app.selectRiskChoice('riskHasExisting', '有', this); app.updateRiskForm();">有</button>
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskHasExisting', '沒有', this); app.updateRiskForm();">沒有</button>
+                                </div>
+                                <input type="hidden" id="riskHasExisting" value="沒有">
+                            </div>
+
+                            <!-- Q7a: 月負擔（條件顯示） -->
+                            <div id="existingBurdenGroup" style="display: none; margin-left: 16px; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                                <div class="form-group">
+                                    <div class="form-label">每月大約負擔</div>
+                                    <div class="choices-group">
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMonthlyBurden', '5,000以下', this)">5,000以下</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMonthlyBurden', '5,000-10,000', this)">5,000-10,000</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMonthlyBurden', '10,000-20,000', this)">10,000-20,000</button>
+                                        <button class="choice" onclick="app.selectRiskChoice('riskMonthlyBurden', '20,000以上', this)">20,000以上</button>
+                                    </div>
+                                    <input type="hidden" id="riskMonthlyBurden" value="">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section: 職業與收入 -->
+                        <div style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--brand-dark); margin-bottom: 12px;">職業與收入</div>
+
+                            <!-- Q8: 薪資發放方式 -->
+                            <div class="form-group">
+                                <div class="form-label">薪資發放方式</div>
+                                <div class="choices-group">
+                                    <button class="choice on" onclick="app.selectRiskChoice('riskSalaryType', '薪轉（匯款入帳）', this)">薪轉（匯款入帳）</button>
+                                    <button class="choice" onclick="app.selectRiskChoice('riskSalaryType', '領現金', this)">領現金</button>
+                                </div>
+                                <input type="hidden" id="riskSalaryType" value="薪轉（匯款入帳）">
+                            </div>
+
+                            <!-- Q9: 月薪 -->
+                            <div class="form-group">
+                                <div class="form-label">月薪（元）</div>
+                                <input type="number" id="riskIncome" class="form-input" placeholder="25000" min="0">
+                            </div>
+                        </div>
+
+                        <!-- Q10: 戶籍與居住地相同 -->
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="riskSameAddr" onchange="app.updateRiskCheckbox('riskSameAddr')">
+                                <span>戶籍與現居住地相同</span>
+                            </label>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" onclick="app.calculateRiskScore()">評估風控</button>
+                    </div>
+                </div>
+
+                <!-- Risk Score Display -->
+                <div id="riskDisplayPanel" class="risk-panel" style="display: none;">
+                    <div class="risk-score-display">
+                        <div>
+                            <div class="result-label">綜合評分</div>
+                            <div class="risk-score-value" id="riskScoreValue">0</div>
+                        </div>
+                        <div class="risk-grade-badge" id="riskGradeBadge" style="background: var(--cream-dark); color: var(--text);">--</div>
+                    </div>
+                    <div id="riskFactorsDisplay" class="risk-factors-list" style="display:none;"></div>
+                </div>
+
+                <!-- Smart Advice Panel -->
+                <div id="advicePanel" class="advice-panel" style="display: none;">
+                    <div class="advice-layer">
+                        <div class="advice-layer-title">
+                            <span>💬</span>
+                            <span>開場建議</span>
+                        </div>
+                        <div class="advice-layer-content" id="adviceOpening"></div>
+                    </div>
+                    <div class="advice-layer">
+                        <div class="advice-layer-title">
+                            <span>📋</span>
+                            <span>推薦方案</span>
+                        </div>
+                        <div class="advice-layer-content" id="advicePlan"></div>
+                    </div>
+                    <div class="advice-layer">
+                        <div class="advice-layer-title">
+                            <span>⚠️</span>
+                            <span>注意事項</span>
+                        </div>
+                        <div class="advice-layer-content" id="adviceObjection"></div>
+                    </div>
+                    <div class="advice-layer">
+                        <div class="advice-layer-title">
+                            <span>📊</span>
+                            <span>預估核准率</span>
+                        </div>
+                        <div class="advice-layer-content">
+                            <div class="approval-rate-bar">
+                                <div class="approval-rate-fill" id="approvalRateFill" style="width: 0%;">0%</div>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;" id="approvalRateText">歷史數據</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="app.createCase()">一鍵建立案件</button>
+                </div>
+            </div>
+
+            <!-- Tab 2: CRM -->
+            <div id="tab2" class="tab-content">
+                <div class="section-title">客戶管理</div>
+                <div class="card">
+                    <div class="search-bar">
+                        <input type="text" id="crmSearch" class="search-input" placeholder="搜尋客戶名稱或手機">
+                    </div>
+                    <div class="filter-tabs">
+                        <div class="filter-tab active" onclick="app.filterCRM('全部')">全部</div>
+                        <div class="filter-tab" onclick="app.filterCRM('待處理')">待處理</div>
+                        <div class="filter-tab" onclick="app.filterCRM('審核中')">審核中</div>
+                        <div class="filter-tab" onclick="app.filterCRM('已核准')">已核准</div>
+                        <div class="filter-tab" onclick="app.filterCRM('已撥款')">已撥款</div>
+                        <div class="filter-tab" onclick="app.filterCRM('婉拒')">婉拒</div>
+                    </div>
+                    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+                        <button class="btn btn-small btn-primary" onclick="app.openQuickCreateCase()">＋ 新增案件</button>
+                        <button class="btn btn-small" onclick="app.exportCRM()">📥 匯出</button>
+                    </div>
+                </div>
+                <div id="crmCustomerList"></div>
+            </div>
+
+            <!-- Tab 3: Dashboard -->
+            <div id="tab3" class="tab-content">
+                <div class="section-title" id="dashTitle">數據面板</div>
+                <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+                    <button class="btn btn-small" onclick="app.exportDashboard()">📥 匯出報表</button>
+                </div>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">試算次數</div>
+                        <div class="kpi-value" id="kpiCalcCount">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">送件數</div>
+                        <div class="kpi-value" id="kpiSubmitCount">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">核准數</div>
+                        <div class="kpi-value" id="kpiApproveCount">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">核准率</div>
+                        <div class="kpi-value" id="kpiApproveRate">0%</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">已撥款總額</div>
+                        <div class="kpi-value" id="kpiDisbursedAmount">$0</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span>本月目標進度</span>
+                        <span id="monthTarget" style="font-size: 12px; color: var(--text-muted);">0 / 100</span>
+                    </div>
+                    <div class="approval-rate-bar">
+                        <div class="approval-rate-fill" id="monthTargetFill" style="width: 0%; background: var(--gold); color: var(--text);">0%</div>
+                    </div>
+                </div>
+
+                <div class="card" id="rejectionChartCard" style="display:none;">
+                    <div class="card-header">婉拒原因分布</div>
+                    <div id="rejectionChart"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">管道績效</div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>管道</th>
+                                <th>送件</th>
+                                <th>核准</th>
+                                <th>核准率</th>
+                            </tr>
+                        </thead>
+                        <tbody id="channelTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="card" id="userPerformanceCard" style="display: none;">
+                    <div class="card-header">業務績效</div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>送件數</th>
+                                <th>核准數</th>
+                                <th>核准率</th>
+                                <th>總金額</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userPerformanceBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">風險評級分布</div>
+                    <div id="gradeDistChart"></div>
+                </div>
+            </div>
+
+            <!-- Tab 4: Admin -->
+            <div id="tab4" class="tab-content">
+                <div class="section-title">管理設定</div>
+                <div class="card">
+                    <div class="filter-tabs">
+                        <div class="filter-tab active" onclick="app.switchAdminTab('users')">人員管理</div>
+                        <div class="filter-tab" onclick="app.switchAdminTab('finance')">分期公司</div>
+                        <div class="filter-tab" onclick="app.switchAdminTab('stores')">店家管理</div>
+                        <div class="filter-tab" onclick="app.switchAdminTab('system')">系統設定</div>
+                    </div>
+                </div>
+
+                <!-- Users Management -->
+                <div id="adminUsers" class="card">
+                    <div class="card-header">
+                        <span>人員管理</span>
+                        <button class="btn btn-small btn-primary" onclick="app.openUserModal()">+ 新增</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>手機</th>
+                                <th>角色</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Finance Companies -->
+                <div id="adminFinance" class="card" style="display: none;">
+                    <div class="card-header">
+                        <span>分期公司</span>
+                        <button class="btn btn-small btn-primary" onclick="app.openFinanceModal()">+ 新增</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>公司名稱</th>
+                                <th>備註</th>
+                                <th>狀態</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financeTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Stores -->
+                <div id="adminStores" class="card" style="display: none;">
+                    <div class="card-header">
+                        <span>店家管理</span>
+                        <button class="btn btn-small btn-primary" onclick="app.openStoreModal()">+ 新增</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>通路名稱</th>
+                                <th>配合分期公司</th>
+                                <th>備註</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="storesTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- System Settings -->
+                <div id="adminSystem" class="card" style="display: none;">
+                    <div class="card-header">系統設定</div>
+                    <div class="form-group">
+                        <button class="btn btn-primary btn-block" onclick="app.exportData()">📥 匯出資料 (JSON)</button>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-secondary btn-block" onclick="app.importDataPrompt()">📤 匯入資料</button>
+                        <input type="file" id="importFile" style="display: none;" accept=".json" onchange="app.importData(event)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="app.switchTab(1)">
+            <div class="nav-icon">🧮</div>
+            <div>成交試算</div>
+        </div>
+        <div class="nav-item" onclick="app.switchTab(2)">
+            <div class="nav-icon">👥</div>
+            <div>客戶管理</div>
+        </div>
+        <div class="nav-item hidden" id="navTab3" onclick="app.switchTab(3)">
+            <div class="nav-icon">📊</div>
+            <div>數據面板</div>
+        </div>
+        <div class="nav-item hidden" id="navTab4" onclick="app.switchTab(4)">
+            <div class="nav-icon">⚙️</div>
+            <div>管理設定</div>
+        </div>
+    </div>
+
+    <!-- Modals & Drawers -->
+    <div id="modalOverlay" class="modal-overlay" onclick="app.closeModal()"></div>
+    <div id="customerDrawer" class="drawer"></div>
+
+    <script>
+        // ========== DATA STRUCTURES ==========
+        const DEFAULT_DATA = {
+            users: [
+                { id: 'u1', name: 'Gina', phone: '0900000001', role: 'admin', password: 'Aa1234', active: true, channel: 'FlowPay' },
+                { id: 'u2', name: '王經理', phone: '0900000002', role: 'manager', password: '1234', active: true, channel: 'FlowPay' },
+                { id: 'u3', name: '李業務', phone: '0900000003', role: 'sales', password: '1234', active: true, channel: 'e01' },
+            ],
+            financeCompanies: [
+                {
+                    id: 'fc1',
+                    name: '裕富數位 (BuyNpay)',
+                    note: '裕融企業子公司',
+                    active: true,
+                    useCoefficient: true,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'both', coefficient: 0.34188, feeRate: 0.025 },
+                        { period: 6, type: 'both', coefficient: 0.172176, feeRate: 0.032 },
+                        { period: 9, type: 'both', coefficient: 0.116346, feeRate: 0.045 },
+                        { period: 12, type: 'both', coefficient: 0.088419, feeRate: 0.0575 },
+                        { period: 18, type: 'both', coefficient: 0.060551, feeRate: 0.0825 },
+                        { period: 24, type: 'both', coefficient: 0.046685, feeRate: 0.1075 },
+                        { period: 30, type: 'both', coefficient: 0.038314, feeRate: 0.13 },
+                        { period: 36, type: 'both', coefficient: 0.03287, feeRate: 0.155 },
+                    ],
+                },
+                {
+                    id: 'fc2',
+                    name: '中租零卡 (zingala銀角零卡)',
+                    note: '中租迪和旗下',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'both', coefficient: 0.345, feeRate: 0.02 },
+                        { period: 6, type: 'both', coefficient: 0.175, feeRate: 0.03 },
+                        { period: 12, type: 'both', coefficient: 0.09, feeRate: 0.055 },
+                        { period: 24, type: 'both', coefficient: 0.048, feeRate: 0.105 },
+                        { period: 36, type: 'both', coefficient: 0.034, feeRate: 0.15 },
+                    ],
+                },
+                {
+                    id: 'fc3',
+                    name: '和潤企業 (Pay4U)',
+                    note: '和泰汽車旗下',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'markup',
+                    plans: [
+                        { period: 3, type: 'both', coefficient: 0, feeRate: 0.022 },
+                        { period: 6, type: 'both', coefficient: 0, feeRate: 0.035 },
+                        { period: 9, type: 'both', coefficient: 0, feeRate: 0.05 },
+                        { period: 12, type: 'both', coefficient: 0, feeRate: 0.055 },
+                        { period: 18, type: 'both', coefficient: 0, feeRate: 0.09 },
+                        { period: 24, type: 'both', coefficient: 0, feeRate: 0.12 },
+                        { period: 30, type: 'both', coefficient: 0, feeRate: 0.165 },
+                        { period: 36, type: 'both', coefficient: 0, feeRate: 0.18 },
+                    ],
+                },
+                {
+                    id: 'fc4',
+                    name: '麻吉付 (MAJIPAY)',
+                    note: '廿一世紀數位科技',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'both', coefficient: 0.345, feeRate: 0.022 },
+                        { period: 6, type: 'both', coefficient: 0.175, feeRate: 0.033 },
+                        { period: 12, type: 'both', coefficient: 0.091, feeRate: 0.058 },
+                        { period: 24, type: 'both', coefficient: 0.049, feeRate: 0.11 },
+                    ],
+                },
+                {
+                    id: 'fc5',
+                    name: '分期趣 (GOGOPAY)',
+                    note: 'PChome合作',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'zero', coefficient: 0, feeRate: 0.02 },
+                        { period: 6, type: 'zero', coefficient: 0, feeRate: 0.03 },
+                        { period: 12, type: 'zero', coefficient: 0, feeRate: 0.055 },
+                    ],
+                },
+                {
+                    id: 'fc6',
+                    name: 'AFTEE 後支付',
+                    note: '日商 Net Protections',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'zero', coefficient: 0, feeRate: 0.025 },
+                        { period: 6, type: 'zero', coefficient: 0, feeRate: 0.04 },
+                    ],
+                },
+                {
+                    id: 'fc7',
+                    name: '月付大人 (monthlypay)',
+                    note: '新光合纖集團',
+                    active: true,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'both', coefficient: 0.344, feeRate: 0.022 },
+                        { period: 6, type: 'both', coefficient: 0.174, feeRate: 0.035 },
+                        { period: 12, type: 'both', coefficient: 0.09, feeRate: 0.06 },
+                    ],
+                },
+                {
+                    id: 'fc8',
+                    name: 'Go分期',
+                    note: '3C無卡分期',
+                    active: false,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 6, type: 'general', coefficient: 0.176, feeRate: 0 },
+                        { period: 12, type: 'general', coefficient: 0.092, feeRate: 0 },
+                    ],
+                },
+                {
+                    id: 'fc9',
+                    name: '台新銀行',
+                    note: '信用卡分期',
+                    active: false,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [
+                        { period: 3, type: 'zero', coefficient: 0, feeRate: 0.022 },
+                        { period: 6, type: 'zero', coefficient: 0, feeRate: 0.033 },
+                        { period: 12, type: 'zero', coefficient: 0, feeRate: 0.058 },
+                    ],
+                },
+            ],
+            stores: [
+                {
+                    id: 's1',
+                    name: '新竹門市',
+                    note: '新竹科學園區',
+                    defaultType: 'both',
+                    fcConfigs: { fc1: {}, fc2: {}, fc3: {}, fc4: {}, fc5: {}, fc6: {}, fc7: {} },
+                },
+                {
+                    id: 's2',
+                    name: '台北門市',
+                    note: '信義區',
+                    defaultType: 'both',
+                    fcConfigs: { fc1: {}, fc2: {}, fc3: {}, fc4: {}, fc5: {}, fc6: {}, fc7: {} },
+                },
+                {
+                    id: 's3',
+                    name: '台中門市',
+                    note: '台中市中心',
+                    defaultType: 'both',
+                    fcConfigs: { fc1: {}, fc2: {}, fc3: {}, fc4: {}, fc5: {}, fc6: {}, fc7: {} },
+                },
+            ],
+            customers: [],
+            rejectionCodes: [
+                { code: 'R01', label: '查詢過多', desc: '近3個月聯徵查詢超過3次' },
+                { code: 'R02', label: '工作不穩定', desc: '任職未滿3個月或無固定工作' },
+                { code: 'R03', label: '收入不足', desc: '月收入不足以負擔月付金額' },
+                { code: 'R04', label: '負面信用紀錄', desc: '信用卡停卡/催收/強停紀錄' },
+                { code: 'R05', label: '補件不足', desc: '應補文件未在期限內提供' },
+                { code: 'R06', label: '案件合理性不足', desc: '申請金額與消費不符' },
+                { code: 'R07', label: '警示戶', desc: '帳戶列為警示戶' },
+                { code: 'R08', label: '年齡不符', desc: '未滿20歲或超過65歲' },
+                { code: 'R09', label: '重複申請', desc: '同一客戶已在審核中' },
+                { code: 'R10', label: '其他', desc: '須填寫備註說明' },
+            ],
+        };
+
+        // ========== APP STATE ==========
+        const app = {
+            currentUser: null,
+            currentTab: 1,
+            crmFilter: '全部',
+            adminTab: 'users',
+            data: {},
+
+            // ========== SECURITY: HTML ESCAPE UTILITY ==========
+            esc(str) {
+                if (str == null) return '';
+                return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+            },
+
+            // ========== TOAST NOTIFICATIONS ==========
+            toast(message, type = 'info', duration = 2800) {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
+                const el = document.createElement('div');
+                el.className = 'toast toast-' + type;
+                el.textContent = message;
+                container.appendChild(el);
+                setTimeout(() => {
+                    el.classList.add('toast-out');
+                    setTimeout(() => el.remove(), 300);
+                }, duration);
+            },
+
+            // ========== INITIALIZATION ==========
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+
+                // Check if user session exists
+                const storedUser = sessionStorage.getItem('flowhub_user');
+                if (storedUser) {
+                    try {
+                        const user = JSON.parse(storedUser);
+                        // Verify user still exists in data
+                        if (this.data.users.find(u => u.id === user.id && u.active)) {
+                            this.currentUser = user;
+                            this.showAppScreen();
+                            this.updateNavigation();
+                            return;
+                        }
+                    } catch (e) {
+                        // Invalid session data, fall through to login
+                    }
+                }
+
+                this.showLoginScreen();
+            },
+
+            loadData() {
+                const stored = localStorage.getItem('flowhub_data');
+                if (stored) {
+                    try {
+                        this.data = JSON.parse(stored);
+                    } catch (e) {
+                        this.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                        this.saveData();
+                    }
+                } else {
+                    this.data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+                    this.saveData();
+                }
+
+                // Migration: Convert old store.fcConfigs object format to new array format
+                if (this.data.stores && Array.isArray(this.data.stores)) {
+                    let needsSave = false;
+                    this.data.stores.forEach(store => {
+                        if (store.fcConfigs && !Array.isArray(store.fcConfigs)) {
+                            // Old format: {fc1: {}, fc2: {}}
+                            const oldConfigs = store.fcConfigs;
+                            store.fcConfigs = Object.keys(oldConfigs).map(fcId => {
+                                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                                return {
+                                    fcId,
+                                    plans: fc ? JSON.parse(JSON.stringify(fc.plans)) : []
+                                };
+                            });
+                            needsSave = true;
+                        }
+                    });
+                    if (needsSave) {
+                        this.saveData();
+                    }
+                }
+            },
+
+            saveData() {
+                localStorage.setItem('flowhub_data', JSON.stringify(this.data));
+            },
+
+            setupEventListeners() {
+                document.getElementById('calcAmount').addEventListener('input', (e) => {
+                    e.target.value = this.formatNumber(e.target.value);
+                });
+                document.getElementById('calcFC').addEventListener('change', () => this.updateCalculation());
+                document.getElementById('calcZeroRate').addEventListener('change', () => this.updateCalculation());
+                document.getElementById('storeSelector').addEventListener('change', () => {
+                    this.updateStoreBanner();
+                    this.filterFCsByStore();
+                    this.updateCalculation();
+                });
+                document.getElementById('crmSearch').addEventListener('input', () => this.renderCRM());
+            },
+
+            // ========== LOGIN ==========
+            login() {
+                const phone = document.getElementById('loginPhone').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                const errorEl = document.getElementById('loginError');
+
+                const user = this.data.users.find(u => u.phone === phone && u.password === password && u.active);
+                if (!user) {
+                    errorEl.textContent = '帳號或密碼不對，再試一次吧';
+                    return;
+                }
+
+                this.currentUser = user;
+                sessionStorage.setItem('flowhub_user', JSON.stringify(user));
+                this.showAppScreen();
+                this.updateNavigation();
+                this.renderCalculator();
+                this.renderCRM();
+                this.renderDashboard();
+                this.renderAdmin();
+
+                // Warm welcome greeting
+                const hour = new Date().getHours();
+                let greeting = '嗨';
+                if (hour < 12) greeting = '早安';
+                else if (hour < 18) greeting = '午安';
+                else greeting = '晚安';
+                setTimeout(() => {
+                    this.toast(greeting + '，' + this.currentUser.name + '！今天也一起加油吧 ✨', 'info', 3000);
+                }, 500);
+            },
+
+            logout() {
+                if (confirm('要登出了嗎？下次再見 👋')) {
+                    this.currentUser = null;
+                    sessionStorage.removeItem('flowhub_user');
+                    document.getElementById('loginPhone').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginError').textContent = '';
+                    this.showLoginScreen();
+                }
+            },
+
+            showLoginScreen() {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').classList.remove('active');
+            },
+
+            showAppScreen() {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').classList.add('active');
+                document.getElementById('currentUserName').textContent = this.currentUser.name;
+                document.getElementById('currentRoleBadge').textContent = this.getRoleName(this.currentUser.role);
+            },
+
+            getRoleName(role) {
+                const map = { admin: '總控', manager: '主管', sales: '業務' };
+                return map[role] || role;
+            },
+
+            updateNavigation() {
+                const role = this.currentUser.role;
+                document.getElementById('navTab3').classList.toggle('hidden', role === 'sales');
+                document.getElementById('navTab4').classList.toggle('hidden', role !== 'admin');
+            },
+
+            // ========== TAB SWITCHING ==========
+            switchTab(tabNum) {
+                this.currentTab = tabNum;
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById('tab' + tabNum).classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.querySelectorAll('.nav-item')[tabNum - 1]?.classList.add('active');
+
+                if (tabNum === 3) this.renderDashboard();
+            },
+
+            switchAdminTab(tabName) {
+                this.adminTab = tabName;
+                ['users', 'finance', 'stores', 'system'].forEach(t => {
+                    document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = 'none';
+                });
+                document.getElementById('admin' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).style.display = 'block';
+                document.querySelectorAll('#tab4 .filter-tab').forEach((t, i) => {
+                    t.classList.toggle('active', ['users', 'finance', 'stores', 'system'][i] === tabName);
+                });
+            },
+
+            // ========== CALCULATOR ==========
+            renderCalculator() {
+                const storeSelect = document.getElementById('storeSelector');
+                storeSelect.innerHTML = '<option value="">-- 請選擇店家 --</option>';
+                this.data.stores.forEach(store => {
+                    storeSelect.innerHTML += `<option value="${store.id}">${store.name}</option>`;
+                });
+
+                this.filterFCsByStore();
+            },
+
+            filterFCsByStore() {
+                const storeId = document.getElementById('storeSelector').value;
+                const fcSelect = document.getElementById('calcFC');
+                fcSelect.innerHTML = '<option value="">-- 選擇分期公司 --</option>';
+
+                if (storeId) {
+                    // If store selected, show only FCs configured for that store
+                    const store = this.data.stores.find(s => s.id === storeId);
+                    if (store && store.fcConfigs && Array.isArray(store.fcConfigs)) {
+                        store.fcConfigs.forEach(cfg => {
+                            const fc = this.data.financeCompanies.find(f => f.id === cfg.fcId);
+                            if (fc && fc.active) {
+                                fcSelect.innerHTML += `<option value="${fc.id}">${fc.name}</option>`;
+                            }
+                        });
+                    }
+                } else {
+                    // Otherwise show all active FCs
+                    this.data.financeCompanies.forEach(fc => {
+                        if (fc.active) {
+                            fcSelect.innerHTML += `<option value="${fc.id}">${fc.name}</option>`;
+                        }
+                    });
+                }
+            },
+
+            updateStoreBanner() {
+                const storeId = document.getElementById('storeSelector').value;
+                const banner = document.getElementById('storeBanner');
+                if (storeId) {
+                    const store = this.data.stores.find(s => s.id === storeId);
+                    banner.textContent = `📍 ${store.name} - ${store.note}`;
+                    banner.style.display = 'block';
+                } else {
+                    banner.style.display = 'none';
+                }
+            },
+
+            formatNumber(value) {
+                let v = value.replace(/\D/g, '');
+                if (v.length > 7) v = v.slice(0, 7);
+                return v.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            },
+
+            parseNumber(value) {
+                return parseInt(value.replace(/,/g, '')) || 0;
+            },
+
+            updateCalculation() {
+                const amount = this.parseNumber(document.getElementById('calcAmount').value);
+                const fcId = document.getElementById('calcFC').value;
+                const isZeroRate = document.getElementById('calcZeroRate').checked;
+                const storeId = document.getElementById('storeSelector').value;
+
+                if (!amount || !fcId) {
+                    document.getElementById('calcResults').style.display = 'none';
+                    return;
+                }
+
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+
+                // Get plans from store config if store is selected, otherwise use master plans
+                let plansToUse = fc.plans;
+                if (storeId) {
+                    const store = this.data.stores.find(s => s.id === storeId);
+                    if (store && store.fcConfigs && Array.isArray(store.fcConfigs)) {
+                        const storeFC = store.fcConfigs.find(cfg => cfg.fcId === fcId);
+                        if (storeFC && storeFC.plans) {
+                            plansToUse = storeFC.plans;
+                        }
+                    }
+                }
+
+                let availablePlans = plansToUse.filter(p => {
+                    if (isZeroRate) return p.type === 'zero' || p.type === 'both';
+                    return p.type === 'general' || p.type === 'both';
+                });
+
+                if (availablePlans.length === 0) {
+                    document.getElementById('calcResults').style.display = 'none';
+                    return;
+                }
+
+                // Generate cards with tables for all available plans
+                let html = '';
+                const cardClass = isZeroRate ? 'zero-rate' : 'general';
+
+                // Build table header
+                let tableHead = '<tr><th class="period">期數</th><th class="monthly">每月金額</th>';
+                if (!isZeroRate) {
+                    tableHead += '<th>總繳金額</th>';
+                }
+                if (this.currentUser.role === 'admin' && !storeId) {
+                    tableHead += '<th>實質年利率</th>';
+                }
+                tableHead += '</tr>';
+
+                // Build table rows for each plan
+                let tableBody = '';
+                availablePlans.forEach((plan, idx) => {
+                    const result = this.calculatePlan(amount, fc, plan, isZeroRate);
+                    tableBody += '<tr>';
+                    tableBody += `<td class="period">${plan.period}期</td>`;
+                    tableBody += `<td class="monthly">$${this.formatNumber(result.monthly.toString())}</td>`;
+                    if (!isZeroRate) {
+                        tableBody += `<td class="total">$${this.formatNumber(result.total.toString())}</td>`;
+                    }
+                    if (this.currentUser.role === 'admin' && !storeId) {
+                        const irr = this.calculateIRR(result.monthly, plan.period, amount);
+                        tableBody += `<td>${(irr * 100).toFixed(2)}%</td>`;
+                    }
+                    tableBody += '</tr>';
+
+                    // Add disbursement row for zero rate
+                    if (isZeroRate) {
+                        tableBody += `<tr class="disbursement-row" id="disbursement-${idx}" style="display: none;">`;
+                        tableBody += '<td colspan="2">';
+                        tableBody += `<strong>撥款金額：</strong> $${this.formatNumber(result.disbursement.toString())}`;
+                        tableBody += '</td></tr>';
+                    }
+                });
+
+                // Build card
+                html += '<div class="plan-card">';
+                html += `<div class="plan-card-header ${cardClass}">`;
+                html += `<span>${fc.name}</span>`;
+                if (isZeroRate) {
+                    html += `<span>零利率</span>`;
+                }
+                html += '</div>';
+                html += '<table class="plan-table">';
+                html += tableHead;
+                html += tableBody;
+                html += '</table>';
+
+                // Add toggle button for zero rate
+                if (isZeroRate) {
+                    html += `<button class="disbursement-toggle" onclick="app.toggleDisbursement(this)">查看撥款金額</button>`;
+                }
+
+                html += '</div>';
+
+                document.getElementById('calcResults').innerHTML = html;
+                document.getElementById('calcResults').style.display = 'block';
+            },
+
+            toggleDisbursement(btn) {
+                const card = btn.closest('.plan-card');
+                const rows = card.querySelectorAll('.disbursement-row');
+                const isShowing = rows[0].style.display === 'table-row';
+
+                rows.forEach(row => {
+                    row.style.display = isShowing ? 'none' : 'table-row';
+                });
+
+                btn.textContent = isShowing ? '查看撥款金額' : '隱藏撥款金額';
+            },
+
+            calculatePlan(amount, fc, plan, isZero) {
+                let fee = 0, monthly = 0, total = amount, disbursement = amount;
+
+                if (isZero) {
+                    // Zero interest: customer pays amount/period, store pays fee
+                    monthly = Math.round(amount / plan.period);
+                    fee = Math.round(amount * plan.feeRate);
+                    disbursement = amount - fee;
+                    total = amount;
+                } else {
+                    // General plan
+                    if (fc.useCoefficient && plan.coefficient > 0) {
+                        // Coefficient mode (e.g. 裕富): monthly = amount * coefficient
+                        monthly = Math.round(amount * plan.coefficient);
+                    } else if (fc.generalFormula === 'markup') {
+                        // Markup (e.g. 和潤): monthly = amount * (1+feeRate) / period
+                        monthly = Math.round(amount * (1 + plan.feeRate) / plan.period);
+                    } else if (plan.feeRate > 0) {
+                        // Grossup (default): monthly = amount / (1-feeRate) / period
+                        if (plan.feeRate >= 1) {
+                            monthly = Math.round(amount / plan.period);
+                        } else {
+                            monthly = Math.round(amount / (1 - plan.feeRate) / plan.period);
+                        }
+                    } else {
+                        monthly = Math.round(amount / plan.period);
+                    }
+                    total = monthly * plan.period;
+                    fee = total - amount;
+                    disbursement = amount;
+                }
+
+                return { monthly, fee, total, disbursement };
+            },
+
+            calculateIRR(monthly, period, principal) {
+                // Newton's method for IRR calculation
+                let rate = 0.01;
+                for (let i = 0; i < 100; i++) {
+                    let pv = 0;
+                    for (let j = 1; j <= period; j++) {
+                        pv += monthly / Math.pow(1 + rate, j);
+                    }
+                    const npv = principal - pv;
+                    if (Math.abs(npv) < 0.01) break;
+
+                    let dpv = 0;
+                    for (let j = 1; j <= period; j++) {
+                        dpv -= monthly * j / Math.pow(1 + rate, j + 1);
+                    }
+                    if (Math.abs(dpv) < 0.0001) break;
+                    rate -= npv / dpv;
+                }
+                return Math.max(0, rate / 12);
+            },
+
+            // ========== IMPORT CUSTOMER DATA ==========
+            async importCustomerData() {
+                const phone = document.getElementById('importPhone').value.trim();
+                const statusEl = document.getElementById('importStatus');
+                if (!phone) {
+                    statusEl.innerHTML = '<span style="color:var(--red);">請輸入手機號碼</span>';
+                    return;
+                }
+                statusEl.innerHTML = '<span style="color:var(--brand);">查詢中...</span>';
+
+                const SUPABASE_URL = 'https://zqwzmlythbcspoqfmamt.supabase.co';
+                const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxd3ptbHl0aGJjc3BvcWZtYW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzIwMzgsImV4cCI6MjA5MDc0ODAzOH0.64Qp1tqtZswhidf16QhX11_y614DDZHM4AUDKHFa-GM';
+
+                try {
+                    const res = await fetch(
+                        `${SUPABASE_URL}/rest/v1/applications?phone=eq.${encodeURIComponent(phone)}&order=created_at.desc&limit=1`,
+                        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+                    );
+                    if (!res.ok) throw new Error('API error');
+                    const rows = await res.json();
+                    if (!rows || rows.length === 0) {
+                        statusEl.innerHTML = '<span style="color:var(--red);">查無此號碼的填單紀錄</span>';
+                        return;
+                    }
+                    const d = rows[0];
+
+                    // Fill basic info
+                    if (d.name) document.getElementById('calcName').value = d.name;
+                    if (d.phone) document.getElementById('calcPhone').value = d.phone;
+                    if (d.need_amount) {
+                        document.getElementById('calcAmount').value = this.formatNumber(d.need_amount.toString());
+                        this.updateCalculation();
+                    }
+
+                    // Expand risk section
+                    const riskSection = document.getElementById('riskSection');
+                    if (riskSection && riskSection.style.display === 'none') {
+                        this.toggleCollapse('riskSection');
+                    }
+
+                    // Map imported data to risk form fields
+                    const fieldMapping = [
+                        { id: 'riskAlert', val: d.is_alert === '是' ? '是' : '否' },
+                        { id: 'riskHasCC', val: d.has_credit_card === '有辦過' ? '有辦過' : '沒有', trigger: true },
+                        { id: 'riskCCStatus', val: d.credit_card_status || '' },
+                        { id: 'riskHasCar', val: d.has_car === '有' ? '是' : '否', trigger: true },
+                        { id: 'riskCarTime', val: d.car_time || '' },
+                        { id: 'riskCarQuality', val: d.car_quality || '' },
+                        { id: 'riskHasMoto', val: d.has_moto === '有' ? '是' : '否', trigger: true },
+                        { id: 'riskMotoTime', val: d.moto_time || '' },
+                        { id: 'riskMotoQuality', val: d.moto_quality || '' },
+                        { id: 'riskHasProperty', val: d.has_property === '有' ? '是' : '否' },
+                        { id: 'riskRecentSubmit', val: d.recent_apply === '有' ? '有' : '沒有', trigger: true },
+                        { id: 'riskHasExisting', val: d.has_loan === '有' ? '有' : '沒有', trigger: true },
+                        { id: 'riskSalaryType', val: d.salary_type === 'transfer' ? '薪轉（匯款入帳）' : d.salary_type === 'cash' ? '領現金' : '' },
+                    ];
+
+                    // Map recent apply count fields
+                    if (d.recent_apply === '有' && d.recent_apply_type) {
+                        if (d.recent_apply_type === '融資類') {
+                            fieldMapping.push({ id: 'riskRecentFinance', val: d.recent_apply_count || '1次' });
+                            fieldMapping.push({ id: 'riskRecentConsume', val: '0次' });
+                        } else {
+                            fieldMapping.push({ id: 'riskRecentConsume', val: d.recent_apply_count || '1次' });
+                            fieldMapping.push({ id: 'riskRecentFinance', val: '0次' });
+                        }
+                    }
+
+                    // Map loan burden
+                    if (d.has_loan === '有' && d.loan_burden) {
+                        const burden = parseInt(d.loan_burden) || 0;
+                        let burdenLabel = '5,000以下';
+                        if (burden >= 20000) burdenLabel = '20,000以上';
+                        else if (burden >= 10000) burdenLabel = '10,000-20,000';
+                        else if (burden >= 5000) burdenLabel = '5,000-10,000';
+                        fieldMapping.push({ id: 'riskMonthlyBurden', val: burdenLabel });
+                    }
+
+                    // Apply each field
+                    fieldMapping.forEach(item => {
+                        if (!item.val) return;
+                        const hiddenInput = document.getElementById(item.id);
+                        if (!hiddenInput) return;
+                        hiddenInput.value = item.val;
+
+                        // Find and click the matching button
+                        const group = hiddenInput.closest('.form-group');
+                        if (group) {
+                            const btns = group.querySelectorAll('.choice');
+                            btns.forEach(btn => {
+                                btn.classList.remove('on', 'on-warn', 'on-green');
+                                if (btn.textContent.trim() === item.val) {
+                                    const warnTexts = ['是', '繳最低應繳', '被停卡', '偶爾遲繳', '常常遲繳'];
+                                    if (warnTexts.includes(item.val) && !(item.val === '是' && ['riskHasCar', 'riskHasMoto', 'riskHasProperty'].includes(item.id))) {
+                                        btn.classList.add('on-warn');
+                                    } else {
+                                        btn.classList.add('on');
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    // Trigger conditional visibility
+                    this.updateRiskForm();
+
+                    statusEl.innerHTML = `<span style="color:var(--sage-dark);">✅ 已帶入 <strong>${d.name}</strong> 的資料（${new Date(d.created_at || d.agreed_at).toLocaleDateString('zh-TW')}填單）</span>`;
+
+                } catch (e) {
+                    console.error('Import error:', e);
+                    statusEl.innerHTML = '<span style="color:var(--red);">連線失敗，請確認網路狀態</span>';
+                }
+            },
+
+            // ========== RISK SCORING ==========
+            selectRiskChoice(fieldId, value, btn) {
+                // Update hidden input with the value
+                document.getElementById(fieldId).value = value;
+
+                // Update button styling
+                const parent = btn.parentElement;
+                parent.querySelectorAll('.choice').forEach(b => {
+                    b.classList.remove('on', 'on-warn', 'on-green');
+                    if (b === btn) {
+                        // Check if this button should have warning style
+                        const warnTexts = ['是', '繳最低應繳', '被停卡', '偶爾遲繳', '常常遲繳'];
+                        if (warnTexts.includes(value)) {
+                            if (value === '是' && fieldId === 'riskAlert') {
+                                b.classList.add('on-warn');
+                            } else if (['繳最低應繳', '被停卡', '偶爾遲繳', '常常遲繳'].includes(value)) {
+                                b.classList.add('on-warn');
+                            } else {
+                                b.classList.add('on');
+                            }
+                        } else {
+                            b.classList.add('on');
+                        }
+                    }
+                });
+            },
+
+            updateRiskCheckbox(fieldId) {
+                const val = document.getElementById(fieldId).checked ? '是' : '否';
+                // We don't store this in a hidden input, just track it via checkbox
+            },
+
+            updateRiskForm() {
+                // Show/hide conditional sections based on selections
+                const hasCCValue = document.getElementById('riskHasCC').value;
+                document.getElementById('ccBankGroup').style.display = (hasCCValue === '有辦過') ? 'block' : 'none';
+
+                const hasCarValue = document.getElementById('riskHasCar').value;
+                document.getElementById('carDetailsGroup').style.display = (hasCarValue === '是') ? 'block' : 'none';
+
+                const hasMotoValue = document.getElementById('riskHasMoto').value;
+                document.getElementById('motoDetailsGroup').style.display = (hasMotoValue === '是') ? 'block' : 'none';
+
+                const hasRecentSubmit = document.getElementById('riskRecentSubmit').value;
+                document.getElementById('recentSubmitGroup').style.display = (hasRecentSubmit === '有') ? 'block' : 'none';
+
+                const hasExisting = document.getElementById('riskHasExisting').value;
+                document.getElementById('existingBurdenGroup').style.display = (hasExisting === '有') ? 'block' : 'none';
+            },
+
+            parseMonthlyBurden(val) {
+                const map = {
+                    '5,000以下': 5000,
+                    '5,000-10,000': 7500,
+                    '10,000-20,000': 15000,
+                    '20,000以上': 25000
+                };
+                return map[val] || 0;
+            },
+
+            calculateRiskScore() {
+                // Parse the new pill-button structure
+                const parseTimesValue = (val) => {
+                    const map = { '0次': 0, '1次': 1, '2次': 2, '3次以上': 3 };
+                    return map[val] || 0;
+                };
+
+                const data = {
+                    salary: document.getElementById('riskSalaryType').value,
+                    hasCC: document.getElementById('riskHasCC').value === '有辦過',
+                    ccStatus: document.getElementById('riskCCStatus').value || '',
+                    income: parseInt(document.getElementById('riskIncome').value) || 0,
+                    burden: this.parseMonthlyBurden(document.getElementById('riskMonthlyBurden').value),
+                    recentFinance: parseTimesValue(document.getElementById('riskRecentFinance').value),
+                    recentConsume: parseTimesValue(document.getElementById('riskRecentConsume').value),
+                    sameAddr: document.getElementById('riskSameAddr').checked,
+                    alert: document.getElementById('riskAlert').value === '是',
+                    hasCar: document.getElementById('riskHasCar').value === '是',
+                    carTime: document.getElementById('riskCarTime').value || '',
+                    carQuality: document.getElementById('riskCarQuality').value || '',
+                    hasMoto: document.getElementById('riskHasMoto').value === '是',
+                    motoTime: document.getElementById('riskMotoTime').value || '',
+                    motoQuality: document.getElementById('riskMotoQuality').value || '',
+                };
+
+                let score = 50;
+                const factors = [];
+
+                // Salary
+                if (data.salary === '薪轉（匯款入帳）') {
+                    score += 15;
+                    factors.push('薪資轉帳 +15');
+                } else {
+                    score -= 5;
+                    factors.push('現金領薪 -5');
+                }
+
+                // Credit card
+                if (!data.hasCC) {
+                    score += 0;
+                    factors.push('無信用卡 +0');
+                } else {
+                    if (data.ccStatus === '正常全額繳清') {
+                        score += 10;
+                        factors.push('信用卡正常 +10');
+                    } else if (data.ccStatus === '繳最低應繳') {
+                        score -= 15;
+                        factors.push('信用卡最低應繳 -15');
+                    } else if (data.ccStatus === '有卡沒在用') {
+                        score += 2;
+                        factors.push('信用卡未使用 +2');
+                    } else if (data.ccStatus === '被停卡') {
+                        score -= 30;
+                        factors.push('信用卡停用 -30');
+                    }
+                }
+
+                // Burden ratio
+                if (data.income > 0) {
+                    const ratio = data.burden / data.income;
+                    if (ratio < 0.3) {
+                        score += 15;
+                        factors.push(`負債比 ${(ratio * 100).toFixed(1)}% +15`);
+                    } else if (ratio < 0.5) {
+                        score += 3;
+                        factors.push(`負債比 ${(ratio * 100).toFixed(1)}% +3`);
+                    } else {
+                        score -= 20;
+                        factors.push(`負債比 ${(ratio * 100).toFixed(1)}% -20`);
+                    }
+                }
+
+                // Amount vs income
+                const amount = this.parseNumber(document.getElementById('calcAmount').value);
+                if (data.income > 0) {
+                    if (amount <= data.income * 6) {
+                        score += 10;
+                        factors.push(`申請額度合理 +10`);
+                    } else if (amount > data.income * 12) {
+                        score -= 12;
+                        factors.push(`申請額度過高 -12`);
+                    }
+                }
+
+                // Recent applications
+                if (data.recentFinance >= 3) {
+                    score -= 20;
+                    factors.push(`近3月查詢 ${data.recentFinance}次 -20`);
+                } else if (data.recentFinance === 2) {
+                    score -= 12;
+                    factors.push(`近3月查詢2次 -12`);
+                } else if (data.recentFinance === 1) {
+                    score -= 5;
+                    factors.push(`近3月查詢1次 -5`);
+                } else {
+                    score += 3;
+                    factors.push(`近3月無查詢 +3`);
+                }
+
+                if (data.recentConsume >= 3) {
+                    score -= 8;
+                    factors.push(`近3月申請 ${data.recentConsume}次 -8`);
+                } else if (data.recentConsume === 2) {
+                    score -= 4;
+                    factors.push(`近3月申請2次 -4`);
+                } else if (data.recentConsume === 1) {
+                    score -= 1;
+                    factors.push(`近3月申請1次 -1`);
+                } else {
+                    score += 2;
+                    factors.push(`近3月無申請 +2`);
+                }
+
+                // Address
+                if (data.sameAddr) {
+                    score += 5;
+                    factors.push('地址相同 +5');
+                } else {
+                    score -= 5;
+                    factors.push('地址不同 -5');
+                }
+
+                // Vehicle age
+                const currentYear = new Date().getFullYear();
+                if (data.hasCar && data.carTime > 0) {
+                    const carAge = currentYear - data.carTime;
+                    if (carAge > 1) {
+                        score += 10;
+                        factors.push(`汽車購入${carAge}年 +10`);
+                    } else {
+                        score -= 3;
+                        factors.push(`汽車購入${carAge}年 -3`);
+                    }
+
+                    if (data.carQuality === 'normal') {
+                        score += 8;
+                        factors.push('車況正常 +8');
+                    } else if (data.carQuality === 'paid') {
+                        score += 5;
+                        factors.push('車貸已清償 +5');
+                    } else if (data.carQuality === 'late') {
+                        score -= 20;
+                        factors.push('偶爾遲繳 -20');
+                    } else if (data.carQuality === 'late_often') {
+                        score -= 40;
+                        factors.push('經常遲繳 -40');
+                    }
+                }
+
+                if (data.hasMoto && data.motoTime > 0) {
+                    const motoAge = currentYear - data.motoTime;
+                    if (motoAge > 1) {
+                        score += 10;
+                        factors.push(`機車購入${motoAge}年 +10`);
+                    } else {
+                        score -= 3;
+                        factors.push(`機車購入${motoAge}年 -3`);
+                    }
+
+                    if (data.motoQuality === 'normal') {
+                        score += 8;
+                        factors.push('機車正常 +8');
+                    } else if (data.motoQuality === 'paid') {
+                        score += 5;
+                        factors.push('機車已清償 +5');
+                    } else if (data.motoQuality === 'late') {
+                        score -= 20;
+                        factors.push('偶爾遲繳 -20');
+                    } else if (data.motoQuality === 'late_often') {
+                        score -= 40;
+                        factors.push('經常遲繳 -40');
+                    }
+                }
+
+                // Alert
+                if (data.alert) {
+                    score = 0;
+                    factors.push('警示戶 = 0');
+                } else {
+                    score = Math.max(0, Math.min(100, score));
+                }
+
+                // Grade
+                let grade = 'E';
+                if (score >= 82) grade = 'A';
+                else if (score >= 68) grade = 'B';
+                else if (score >= 55) grade = 'C';
+                else if (score >= 40) grade = 'D';
+
+                // Display
+                document.getElementById('riskScoreValue').textContent = score;
+                document.getElementById('riskGradeBadge').textContent = grade;
+                document.getElementById('riskGradeBadge').className = `risk-grade-badge grade-${grade}`;
+                document.getElementById('riskFactorsDisplay').innerHTML = factors.join('<br>');
+                // Only admin can see score breakdown details
+                document.getElementById('riskFactorsDisplay').style.display =
+                    (this.currentUser && this.currentUser.role === 'admin') ? 'block' : 'none';
+                document.getElementById('riskDisplayPanel').style.display = 'block';
+
+                // Show advice
+                this.generateAdvice(score, grade, data);
+
+                // Store for case creation
+                this.lastRiskScore = score;
+                this.lastRiskGrade = grade;
+                this.lastRiskFactors = data;
+            },
+
+            generateAdvice(score, grade, factors) {
+                // Opening script with warm, professional tone
+                const openingScripts = {
+                    'A': '您的條件非常優秀，我來幫您找最划算的方案，讓您的負擔降到最低。',
+                    'B': '您的條件蠻不錯的，我幫您看看幾個方案，找到最適合您的組合。',
+                    'C': '沒問題，我先幫您評估一下，看看怎麼安排最順利。',
+                    'D': '我先幫您了解一下目前的狀況，看看有沒有適合的方式來安排。',
+                    'E': '我來幫您確認一下，看看目前有哪些選項可以參考。',
+                };
+                document.getElementById('adviceOpening').textContent = openingScripts[grade] || '';
+
+                // Plan recommendation - just the text, no monthly amounts shown
+                const fcId = document.getElementById('calcFC').value;
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+
+                let planText = '';
+                if (fc) {
+                    const isZeroRate = document.getElementById('calcZeroRate').checked;
+                    let available = fc.plans.filter(p => {
+                        if (isZeroRate) return p.type === 'zero' || p.type === 'both';
+                        return p.type === 'general' || p.type === 'both';
+                    });
+
+                    if (available.length >= 2) {
+                        planText = `客戶條件不錯，建議主推 ${fc.name} ${available[0].period}期，也可以提供 ${available[1].period}期給客戶比較。`;
+                    } else if (available.length === 1) {
+                        planText = `建議推薦 ${fc.name} ${available[0].period}期方案。`;
+                    }
+                }
+                document.getElementById('advicePlan').textContent = planText || '請先選擇分期公司和金額。';
+
+                // Actionable warnings only - formatted as 注意事項 for sales person
+                let warnings = [];
+
+                if (factors.alert) {
+                    warnings.push('系統顯示為警示戶，建議先確認帳戶狀態後再評估。');
+                }
+                if (factors.hasCC && factors.ccStatus === '被停卡') {
+                    warnings.push('客戶信用卡曾被停卡，核准需要補充薪轉證明。');
+                }
+                if (factors.hasCC && factors.ccStatus === '繳最低應繳') {
+                    warnings.push('客戶信用卡有繳最低的紀錄，可能需要補薪轉證明。');
+                }
+                if (factors.recentFinance >= 3) {
+                    warnings.push('近3個月聯徵查詢過多，建議先從短期方案開始。');
+                }
+                if (factors.salary === '領現金') {
+                    warnings.push('客戶領現金薪資，需提供近3個月存摺明細。');
+                }
+                if (factors.burden > 0 && factors.income > 0 && factors.burden / factors.income >= 0.5) {
+                    warnings.push('客戶現有負擔較重，建議考慮申請金額或期數。');
+                }
+                if (factors.hasCar && (factors.carQuality === '偶爾遲繳' || factors.carQuality === '常常遲繳')) {
+                    warnings.push('客戶車貸有遲繳紀錄，建議提供近期正常繳款證明。');
+                }
+                if (factors.hasMoto && (factors.motoQuality === '偶爾遲繳' || factors.motoQuality === '常常遲繳')) {
+                    warnings.push('客戶機車貸款有遲繳紀錄，建議提供近期正常繳款證明。');
+                }
+
+                const warningText = warnings.length > 0
+                    ? '⚠️ ' + warnings.join(' | ')
+                    : '客戶狀況良好，無特殊需注意事項。';
+                document.getElementById('adviceObjection').textContent = warningText;
+
+                // Approval rate with percentage only
+                const approvalRates = {
+                    'A': [92, 95, 98],
+                    'B': [75, 80, 88],
+                    'C': [55, 65, 72],
+                    'D': [30, 40, 50],
+                    'E': [5, 10, 20],
+                };
+                const rates = approvalRates[grade] || [50, 60, 70];
+                const approvalRate = rates[Math.floor(Math.random() * rates.length)];
+                document.getElementById('approvalRateFill').style.width = approvalRate + '%';
+                document.getElementById('approvalRateFill').textContent = approvalRate + '%';
+                document.getElementById('approvalRateText').textContent = `${approvalRate}% (歷史數據)`;
+
+                document.getElementById('advicePanel').style.display = 'block';
+            },
+
+            createCase() {
+                const name = document.getElementById('calcName').value.trim();
+                const phone = document.getElementById('calcPhone').value.trim();
+                const amount = this.parseNumber(document.getElementById('calcAmount').value);
+                const fcId = document.getElementById('calcFC').value;
+                const storeId = document.getElementById('storeSelector').value;
+
+                if (!name || !phone || !amount || !fcId || !storeId) {
+                    this.toast('還有欄位沒填完喔，請確認一下 😊', 'warn');
+                    return;
+                }
+
+                if (amount <= 0 || amount > 10000000) {
+                    this.toast('金額範圍是 1 ~ 1,000 萬，請調整一下', 'warn');
+                    return;
+                }
+
+                if (!/^09\d{8}$/.test(phone)) {
+                    this.toast('手機號碼格式不對唷，要 09 開頭共 10 碼', 'warn');
+                    return;
+                }
+
+                if (name.length > 20) {
+                    this.toast('姓名太長了，最多 20 個字', 'warn');
+                    return;
+                }
+
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                const isZeroRate = document.getElementById('calcZeroRate').checked;
+                let available = fc.plans.filter(p => {
+                    if (isZeroRate) return p.type === 'zero' || p.type === 'both';
+                    return p.type === 'general' || p.type === 'both';
+                });
+                if (available.length === 0) {
+                    this.toast('這家分期公司目前沒有符合的方案', 'warn');
+                    return;
+                }
+                const plan = available[0];
+
+                const customer = {
+                    id: 'cust_' + Date.now(),
+                    name,
+                    phone,
+                    amount,
+                    fcId,
+                    period: plan.period,
+                    planType: plan.type,
+                    storeId,
+                    riskScore: this.lastRiskScore || 0,
+                    riskGrade: this.lastRiskGrade || 'E',
+                    riskFactors: this.lastRiskFactors || {},
+                    status: '待處理',
+                    rejectionCode: null,
+                    rejectionNote: '',
+                    notes: [],
+                    userId: this.currentUser.id,
+                    channel: this.currentUser.channel,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    submissions: [],
+                };
+
+                this.data.customers.push(customer);
+                this.saveData();
+
+                this.toast('案件建立成功！加油 💪', 'success');
+                this.switchTab(2);
+                this.renderCRM();
+            },
+
+            // ========== CRM ==========
+            renderCRM() {
+                let customers = this.data.customers;
+
+                // Filter by role
+                if (this.currentUser.role === 'sales') {
+                    customers = customers.filter(c => c.userId === this.currentUser.id);
+                }
+
+                // Filter by search
+                const search = document.getElementById('crmSearch').value.toLowerCase();
+                if (search) {
+                    customers = customers.filter(c =>
+                        c.name.toLowerCase().includes(search) ||
+                        c.phone.includes(search)
+                    );
+                }
+
+                // Filter by status
+                if (this.crmFilter !== '全部') {
+                    customers = customers.filter(c => c.status === this.crmFilter);
+                }
+
+                // Sort by createdAt descending (newest first)
+                customers = customers.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                const container = document.getElementById('crmCustomerList');
+                if (customers.length === 0) {
+                    container.innerHTML = '<div class="card" style="text-align:center;padding:40px 20px;"><div style="font-size:40px;margin-bottom:12px;">📋</div><div style="color:var(--text-muted);font-size:15px;">還沒有客戶紀錄</div><div style="color:var(--text-muted);font-size:13px;margin-top:4px;">點上方「＋ 新增案件」開始建立吧！</div></div>';
+                    return;
+                }
+
+                const statusIcons = {'待處理':'📝','審核中':'⏳','已核准':'✅','已撥款':'💰','婉拒':'❌'};
+
+                container.innerHTML = customers.map(c => {
+                    const daysSinceUpdate = Math.floor((Date.now() - new Date(c.updatedAt).getTime()) / 86400000);
+                    const isStale = daysSinceUpdate > 3 && !['已撥款', '婉拒'].includes(c.status);
+                    return `
+                    <div class="customer-card" onclick="app.openCustomerDetail('${this.esc(c.id)}')">
+                        <div class="customer-card-header">
+                            <div>
+                                <div class="customer-name">${this.esc(c.name)}</div>
+                                <div class="customer-phone">${this.esc(c.phone)}</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${new Date(c.createdAt).toLocaleDateString('zh-TW')}</div>
+                            </div>
+                            <div class="badge badge-${c.status}">${statusIcons[c.status] || ''} ${c.status}</div>
+                        </div>
+                        <div class="customer-meta">
+                            <div class="customer-meta-item">💰 $${this.formatNumber(c.amount.toString())}</div>
+                            <div class="customer-meta-item">🏢 ${this.esc(this.data.financeCompanies.find(f => f.id === c.fcId)?.name || '--')}</div>
+                            <div class="customer-meta-item">⭐ 風險等級: <span class="badge grade-${c.riskGrade}">${c.riskGrade}</span></div>
+                            ${isStale ? '<div class="customer-meta-item"><span style="color:var(--red);font-size:11px;">⏰ 逾期未處理 ' + daysSinceUpdate + ' 天</span></div>' : ''}
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            },
+
+            openQuickCreateCase() {
+                const storeOptions = this.data.stores.map(s =>
+                    `<option value="${this.esc(s.id)}">${this.esc(s.name)}</option>`
+                ).join('');
+
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">新增案件</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <div class="form-label">客戶姓名 *</div>
+                                    <input type="text" id="qcName" class="form-input" placeholder="如：王小明">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">手機號碼 *</div>
+                                    <input type="text" id="qcPhone" class="form-input" placeholder="0912345678">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <div class="form-label">金額 (NT$) *</div>
+                                    <input type="text" id="qcAmount" class="form-input" placeholder="輸入金額">
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">通路 *</div>
+                                    <select id="qcStore" class="form-select" onchange="app.updateQcFC()">
+                                        <option value="">-- 選擇 --</option>
+                                        ${storeOptions}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">分期公司 *</div>
+                                <select id="qcFC" class="form-select">
+                                    <option value="">-- 先選擇通路 --</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                                    <input type="checkbox" id="qcZeroRate">
+                                    <span style="font-size:14px;">零利率方案</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">備註</div>
+                                <textarea id="qcNote" class="form-textarea" placeholder="選填" style="min-height:50px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.saveQuickCase()">建立案件</button>
+                        </div>
+                    </div>
+                `;
+                this.showModal(html);
+
+                // Format amount input
+                document.getElementById('qcAmount').addEventListener('input', (e) => {
+                    e.target.value = this.formatNumber(e.target.value);
+                });
+            },
+
+            updateQcFC() {
+                const storeId = document.getElementById('qcStore').value;
+                const fcSelect = document.getElementById('qcFC');
+                if (!storeId) {
+                    fcSelect.innerHTML = '<option value="">-- 先選擇通路 --</option>';
+                    return;
+                }
+                const store = this.data.stores.find(s => s.id === storeId);
+                const fcIds = Object.keys(store.fcConfigs || {});
+                const options = fcIds.map(fcId => {
+                    const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                    if (!fc || !fc.active) return '';
+                    return `<option value="${this.esc(fc.id)}">${this.esc(fc.name)}</option>`;
+                }).filter(Boolean).join('');
+                fcSelect.innerHTML = '<option value="">-- 選擇分期公司 --</option>' + options;
+            },
+
+            saveQuickCase() {
+                const name = document.getElementById('qcName').value.trim();
+                const phone = document.getElementById('qcPhone').value.trim();
+                const amount = this.parseNumber(document.getElementById('qcAmount').value);
+                const storeId = document.getElementById('qcStore').value;
+                const fcId = document.getElementById('qcFC').value;
+                const isZeroRate = document.getElementById('qcZeroRate').checked;
+                const note = document.getElementById('qcNote').value.trim();
+
+                if (!name || !phone || !amount || !storeId || !fcId) {
+                    this.toast('帶星號的欄位都要填喔 😊', 'warn');
+                    return;
+                }
+                if (amount <= 0 || amount > 10000000) {
+                    this.toast('金額範圍是 1 ~ 1,000 萬，請調整一下', 'warn');
+                    return;
+                }
+                if (!/^09\d{8}$/.test(phone)) {
+                    this.toast('手機號碼格式不對唷，要 09 開頭共 10 碼', 'warn');
+                    return;
+                }
+                if (name.length > 20) {
+                    this.toast('姓名太長了，最多 20 個字', 'warn');
+                    return;
+                }
+
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                let available = fc.plans.filter(p => {
+                    if (isZeroRate) return p.type === 'zero' || p.type === 'both';
+                    return p.type === 'general' || p.type === 'both';
+                });
+                if (available.length === 0) {
+                    this.toast('這家分期公司目前沒有符合的方案', 'warn');
+                    return;
+                }
+                const plan = available[0];
+
+                const customer = {
+                    id: 'cust_' + Date.now(),
+                    name,
+                    phone,
+                    amount,
+                    fcId,
+                    period: plan.period,
+                    planType: plan.type,
+                    storeId,
+                    riskScore: 0,
+                    riskGrade: 'E',
+                    riskFactors: {},
+                    status: '待處理',
+                    rejectionCode: null,
+                    rejectionNote: '',
+                    notes: note ? [{ text: note, author: this.currentUser.name, timestamp: new Date().toISOString() }] : [],
+                    statusHistory: [],
+                    userId: this.currentUser.id,
+                    channel: this.currentUser.channel,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    submissions: [],
+                };
+
+                this.data.customers.push(customer);
+                this.saveData();
+                this.closeModal();
+                this.renderCRM();
+                this.toast('案件建立成功！加油 💪', 'success');
+            },
+
+            filterCRM(status) {
+                this.crmFilter = status;
+                document.querySelectorAll('.filter-tab').forEach((t, i) => {
+                    const statuses = ['全部', '待處理', '審核中', '已核准', '已撥款', '婉拒'];
+                    t.classList.toggle('active', statuses[i] === status);
+                });
+                this.renderCRM();
+            },
+
+            openCustomerDetail(customerId) {
+                const customer = this.data.customers.find(c => c.id === customerId);
+                if (!customer) return;
+
+                const drawer = document.getElementById('customerDrawer');
+                const store = this.data.stores.find(s => s.id === customer.storeId);
+                const fc = this.data.financeCompanies.find(f => f.id === customer.fcId);
+
+                drawer.innerHTML = `
+                    <div class="drawer-header">
+                        <div class="drawer-title">${this.esc(customer.name)}</div>
+                        <button class="drawer-close" onclick="app.closeDrawer()">✕</button>
+                    </div>
+                    <div class="drawer-body">
+                        <div class="card">
+                            <div class="form-label">基本資訊</div>
+                            <div style="font-size: 13px; line-height: 1.8;">
+                                <div><strong>手機：</strong>${this.esc(customer.phone)}</div>
+                                <div><strong>金額：</strong>$${this.formatNumber(customer.amount.toString())}</div>
+                                <div><strong>分期：</strong>${customer.period}期</div>
+                                <div><strong>分期公司：</strong>${this.esc(fc?.name || '--')}</div>
+                                <div><strong>店家：</strong>${this.esc(store?.name || '--')}</div>
+                                <div><strong>管道：</strong>${this.esc(customer.channel)}</div>
+                                <div><strong>建立時間：</strong>${new Date(customer.createdAt).toLocaleString('zh-TW')}</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="form-label">風控評估</div>
+                            <div style="font-size: 13px; line-height: 1.8;">
+                                <div><strong>評分：</strong><span class="badge grade-${customer.riskGrade}">${customer.riskScore} (等級 ${customer.riskGrade})</span></div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="form-label">狀態</div>
+                            <select id="customerStatus" class="form-select" onchange="app.toggleRejectionFields()">
+                                ${(() => {
+                                    const validNext = this.getValidNextStatuses(customer.status);
+                                    const allOptions = [customer.status, ...validNext];
+                                    return allOptions.map(status =>
+                                        `<option value="${status}" ${customer.status === status ? 'selected' : ''}>${status}</option>`
+                                    ).join('');
+                                })()}
+                            </select>
+                            <div id="rejectionFieldsContainer" style="display: ${customer.status === '婉拒' ? 'block' : 'none'}; margin-top: 12px;">
+                                <div class="form-group">
+                                    <div class="form-label">婉拒原因</div>
+                                    <select id="rejectionCode" class="form-select">
+                                        <option value="">-- 選擇原因 --</option>
+                                        ${this.data.rejectionCodes.map(r => `<option value="${r.code}" ${customer.rejectionCode === r.code ? 'selected' : ''}>${r.label}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="form-label">備註</div>
+                                    <textarea id="rejectionNote" class="form-textarea">${customer.rejectionNote || ''}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="form-label">狀態紀錄</div>
+                            ${customer.statusHistory && customer.statusHistory.length > 0 ? `
+                                <div style="font-size: 13px; line-height: 1.8; margin-bottom: 12px;">
+                                    ${customer.statusHistory.map(sh => `
+                                        <div style="padding: 8px; background: var(--blue-pale); border-radius: 4px; margin-bottom: 8px;">
+                                            <div style="color: var(--text-muted); font-size: 12px;">
+                                                <strong>${sh.by}</strong> - ${new Date(sh.at).toLocaleString('zh-TW')}
+                                            </div>
+                                            <div style="margin-top: 4px; color: var(--text);">${sh.from} → ${sh.to}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div style="font-size: 13px; color: var(--text-muted); padding: 8px;">目前沒有狀態變更紀錄</div>
+                            `}
+                        </div>
+
+                        <div class="card">
+                            <div class="form-label">備註歷史</div>
+                            ${customer.notes && customer.notes.length > 0 ? `
+                                <div style="font-size: 13px; line-height: 1.8; margin-bottom: 12px;">
+                                    ${customer.notes.map(note => `
+                                        <div style="padding: 8px; background: var(--gold-pale); border-radius: 4px; margin-bottom: 8px;">
+                                            <div style="color: var(--text-muted); font-size: 12px;">
+                                                <strong>${this.esc(note.author)}</strong> - ${new Date(note.timestamp).toLocaleString('zh-TW')}
+                                            </div>
+                                            <div style="margin-top: 4px; color: var(--text);">${this.esc(note.text)}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : `
+                                <div style="font-size: 13px; color: var(--text-muted); padding: 8px;">目前沒有備註</div>
+                            `}
+                        </div>
+
+                        <div class="card">
+                            <div class="form-label">新增備註</div>
+                            <textarea id="customerNotes" class="form-textarea" placeholder="新增備註..." style="min-height: 60px;"></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-primary btn-block" onclick="app.saveCustomerChanges('${this.esc(customerId)}')">保存</button>
+                            <button class="btn btn-secondary btn-block" onclick="app.closeDrawer()">取消</button>
+                        </div>
+                    </div>
+                `;
+
+                drawer.classList.add('active');
+                document.getElementById('modalOverlay').classList.add('active');
+            },
+
+            saveCustomerChanges(customerId) {
+                const customer = this.data.customers.find(c => c.id === customerId);
+                if (!customer) return;
+
+                const newStatus = document.getElementById('customerStatus').value;
+
+                if (!customer.statusHistory) customer.statusHistory = [];
+                if (newStatus !== customer.status) {
+                    customer.statusHistory.push({
+                        from: customer.status,
+                        to: newStatus,
+                        by: this.currentUser.name,
+                        at: new Date().toISOString(),
+                    });
+                }
+
+                customer.status = newStatus;
+
+                if (newStatus === '婉拒') {
+                    customer.rejectionCode = document.getElementById('rejectionCode').value;
+                    customer.rejectionNote = document.getElementById('rejectionNote').value;
+                }
+
+                const notes = document.getElementById('customerNotes').value.trim();
+                if (notes) {
+                    customer.notes.push({
+                        text: notes,
+                        author: this.currentUser.name,
+                        timestamp: new Date().toISOString(),
+                    });
+                }
+
+                customer.updatedAt = new Date().toISOString();
+                this.saveData();
+                this.closeDrawer();
+                this.renderCRM();
+            },
+
+            closeDrawer() {
+                document.getElementById('customerDrawer').classList.remove('active');
+                document.getElementById('modalOverlay').classList.remove('active');
+            },
+
+            validTransitions: {
+                '待處理': ['審核中', '婉拒'],
+                '審核中': ['已核准', '婉拒'],
+                '已核准': ['已撥款', '婉拒'],
+                '已撥款': [],
+                '婉拒': ['待處理'],
+            },
+
+            getValidNextStatuses(currentStatus) {
+                return this.validTransitions[currentStatus] || [];
+            },
+
+            toggleRejectionFields() {
+                const status = document.getElementById('customerStatus').value;
+                const el = document.getElementById('rejectionFieldsContainer');
+                if (el) el.style.display = status === '婉拒' ? 'block' : 'none';
+            },
+
+            // ========== DASHBOARD ==========
+            renderDashboard() {
+                // Update dashboard title based on role
+                const dashTitle = document.getElementById('dashTitle');
+                if (dashTitle) {
+                    if (this.currentUser.role === 'admin') {
+                        dashTitle.textContent = '營運總覽';
+                    } else if (this.currentUser.role === 'manager') {
+                        dashTitle.textContent = '團隊績效';
+                    } else {
+                        dashTitle.textContent = '我的業績';
+                    }
+                }
+
+                const customers = this.currentUser.role === 'sales'
+                    ? this.data.customers.filter(c => c.userId === this.currentUser.id)
+                    : this.data.customers;
+
+                const calcCount = customers.length;
+                const submitCount = customers.filter(c => ['審核中', '已核准', '已撥款'].includes(c.status)).length;
+                const approveCount = customers.filter(c => ['已核准', '已撥款'].includes(c.status)).length;
+                const approveRate = submitCount > 0 ? Math.round((approveCount / submitCount) * 100) : 0;
+                const disbursedAmount = customers
+                    .filter(c => c.status === '已撥款')
+                    .reduce((sum, c) => sum + (c.amount || 0), 0);
+
+                document.getElementById('kpiCalcCount').textContent = calcCount;
+                document.getElementById('kpiSubmitCount').textContent = submitCount;
+                document.getElementById('kpiApproveCount').textContent = approveCount;
+                document.getElementById('kpiApproveRate').textContent = approveRate + '%';
+                document.getElementById('kpiDisbursedAmount').textContent = '$' + this.formatNumber(disbursedAmount.toString());
+
+                // Month target
+                const monthTargetGoal = 100;
+                const monthTargetPercent = Math.min(100, Math.round((submitCount / monthTargetGoal) * 100));
+                document.getElementById('monthTarget').textContent = `${submitCount} / ${monthTargetGoal}`;
+                document.getElementById('monthTargetFill').style.width = monthTargetPercent + '%';
+                document.getElementById('monthTargetFill').textContent = monthTargetPercent + '%';
+
+                // Rejection codes chart (admin only)
+                document.getElementById('rejectionChartCard').style.display =
+                    this.currentUser.role === 'admin' ? 'block' : 'none';
+                const rejectionMap = {};
+                this.data.rejectionCodes.forEach(r => rejectionMap[r.code] = 0);
+                customers.filter(c => c.status === '婉拒').forEach(c => {
+                    if (c.rejectionCode) rejectionMap[c.rejectionCode]++;
+                });
+
+                const rejectionChart = document.getElementById('rejectionChart');
+                const maxRejection = Math.max(...Object.values(rejectionMap));
+                rejectionChart.innerHTML = Object.entries(rejectionMap).map(([code, count]) => {
+                    const label = this.data.rejectionCodes.find(r => r.code === code)?.label || code;
+                    const percent = maxRejection > 0 ? Math.round((count / maxRejection) * 100) : 0;
+                    return `
+                        <div class="chart-bar">
+                            <div class="chart-bar-label">${this.esc(label)}</div>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar-fill" style="width: ${percent}%;">${count}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Channel performance
+                const channelMap = {};
+                customers.forEach(c => {
+                    if (!channelMap[c.channel]) {
+                        channelMap[c.channel] = { submit: 0, approve: 0 };
+                    }
+                    if (['審核中', '已核准', '已撥款'].includes(c.status)) {
+                        channelMap[c.channel].submit++;
+                    }
+                    if (['已核准', '已撥款'].includes(c.status)) {
+                        channelMap[c.channel].approve++;
+                    }
+                });
+
+                const channelTable = document.getElementById('channelTableBody');
+                channelTable.innerHTML = Object.entries(channelMap).map(([channel, data]) => {
+                    const rate = data.submit > 0 ? Math.round((data.approve / data.submit) * 100) : 0;
+                    return `
+                        <tr>
+                            <td>${this.esc(channel)}</td>
+                            <td>${data.submit}</td>
+                            <td>${data.approve}</td>
+                            <td>${rate}%</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                // User performance (for manager/admin)
+                if (this.currentUser.role !== 'sales') {
+                    const userMap = {};
+                    customers.forEach(c => {
+                        if (!userMap[c.userId]) {
+                            const user = this.data.users.find(u => u.id === c.userId);
+                            userMap[c.userId] = {
+                                name: user?.name || '--',
+                                submit: 0,
+                                approve: 0,
+                                amount: 0
+                            };
+                        }
+                        if (['審核中', '已核准', '已撥款'].includes(c.status)) {
+                            userMap[c.userId].submit++;
+                        }
+                        if (['已核准', '已撥款'].includes(c.status)) {
+                            userMap[c.userId].approve++;
+                        }
+                        userMap[c.userId].amount += c.amount || 0;
+                    });
+
+                    const userPerformanceBody = document.getElementById('userPerformanceBody');
+                    document.getElementById('userPerformanceCard').style.display = 'block';
+                    userPerformanceBody.innerHTML = Object.values(userMap).map(data => {
+                        const rate = data.submit > 0 ? Math.round((data.approve / data.submit) * 100) : 0;
+                        return `
+                            <tr>
+                                <td>${this.esc(data.name)}</td>
+                                <td>${data.submit}</td>
+                                <td>${data.approve}</td>
+                                <td>${rate}%</td>
+                                <td>$${this.formatNumber(data.amount.toString())}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+
+                // Grade distribution
+                const gradeMap = { A: 0, B: 0, C: 0, D: 0, E: 0 };
+                customers.forEach(c => {
+                    gradeMap[c.riskGrade]++;
+                });
+
+                const gradeChart = document.getElementById('gradeDistChart');
+                const maxGrade = Math.max(...Object.values(gradeMap));
+                gradeChart.innerHTML = Object.entries(gradeMap).map(([grade, count]) => {
+                    const percent = maxGrade > 0 ? Math.round((count / maxGrade) * 100) : 0;
+                    return `
+                        <div class="chart-bar">
+                            <div class="chart-bar-label">等級 ${grade}</div>
+                            <div class="chart-bar-container">
+                                <div class="chart-bar-fill grade-${grade}" style="width: ${percent}%; background: var(--text-muted);">${count}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            // ========== ADMIN ==========
+            renderAdmin() {
+                if (this.currentUser.role !== 'admin') return;
+
+                // Users
+                const usersBody = document.getElementById('usersTableBody');
+                usersBody.innerHTML = this.data.users.map(user => `
+                    <tr>
+                        <td>${this.esc(user.name)}</td>
+                        <td>${this.esc(user.phone)}</td>
+                        <td>${this.getRoleName(user.role)}</td>
+                        <td>
+                            <button class="btn btn-small" onclick="app.editUser('${this.esc(user.id)}')">編輯</button>
+                            <button class="btn btn-small btn-danger" onclick="app.deleteUser('${this.esc(user.id)}')">刪除</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Finance Companies
+                const financeBody = document.getElementById('financeTableBody');
+                financeBody.innerHTML = this.data.financeCompanies.map(fc => `
+                    <tr>
+                        <td>${this.esc(fc.name)}</td>
+                        <td>${this.esc(fc.note)}</td>
+                        <td>${fc.active ? '✓ 啟用' : '✗ 停用'}</td>
+                        <td>
+                            <button class="btn btn-small" onclick="app.editFinance('${this.esc(fc.id)}')">編輯</button>
+                            <button class="btn btn-small btn-danger" onclick="app.deleteFinance('${this.esc(fc.id)}')">刪除</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Stores
+                const storesBody = document.getElementById('storesTableBody');
+                storesBody.innerHTML = this.data.stores.map(store => {
+                    const fcConfigs = store.fcConfigs || [];
+                    const fcDisplay = fcConfigs.length > 0
+                        ? fcConfigs.map(cfg => {
+                            const fc = this.data.financeCompanies.find(f => f.id === cfg.fcId);
+                            const planCount = (cfg.plans || []).length;
+                            return fc ? `<span style="display:inline-block;background:var(--gold-lighter);color:var(--brand-dark);padding:2px 8px;border-radius:10px;font-size:11px;margin:2px 2px;">${this.esc(fc.name.split('(')[0].split('（')[0].trim())}(${planCount}期)</span>` : '';
+                        }).filter(Boolean).join('')
+                        : '<span style="color:var(--text-muted);font-size:12px;">未設定</span>';
+                    return `
+                    <tr>
+                        <td>${this.esc(store.name)}</td>
+                        <td style="max-width:300px;">${fcDisplay}</td>
+                        <td>
+                            <button class="btn btn-small" onclick="app.editStore('${this.esc(store.id)}')">編輯</button>
+                            <button class="btn btn-small btn-danger" onclick="app.deleteStore('${this.esc(store.id)}')">刪除</button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            },
+
+            openUserModal() {
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">新增人員</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-label">姓名</div>
+                                <input type="text" id="modalName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">手機</div>
+                                <input type="text" id="modalPhone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">角色</div>
+                                <select id="modalRole" class="form-select">
+                                    <option value="sales">業務</option>
+                                    <option value="manager">主管</option>
+                                    <option value="admin">總控</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">管道</div>
+                                <input type="text" id="modalChannel" class="form-input" placeholder="FlowPay">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">密碼</div>
+                                <input type="password" id="modalPassword" class="form-input">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.saveUser()">建立</button>
+                        </div>
+                    </div>
+                `;
+                this.showModal(html);
+            },
+
+            editUser(userId) {
+                const user = this.data.users.find(u => u.id === userId);
+                if (!user) return;
+
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">編輯人員</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-label">姓名</div>
+                                <input type="text" id="modalName" class="form-input" value="${user.name}">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">手機</div>
+                                <input type="text" id="modalPhone" class="form-input" value="${user.phone}">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">角色</div>
+                                <select id="modalRole" class="form-select">
+                                    <option value="sales" ${user.role === 'sales' ? 'selected' : ''}>業務</option>
+                                    <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>主管</option>
+                                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>總控</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">管道</div>
+                                <input type="text" id="modalChannel" class="form-input" value="${user.channel}">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">密碼</div>
+                                <input type="password" id="modalPassword" class="form-input" value="${user.password}">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="modalActive" ${user.active ? 'checked' : ''}>
+                                    <span>啟用</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.updateUser('${userId}')">保存</button>
+                        </div>
+                    </div>
+                `;
+                this.showModal(html);
+            },
+
+            saveUser() {
+                const newUser = {
+                    id: 'u' + Date.now(),
+                    name: document.getElementById('modalName').value.trim(),
+                    phone: document.getElementById('modalPhone').value.trim(),
+                    role: document.getElementById('modalRole').value,
+                    channel: document.getElementById('modalChannel').value.trim() || 'FlowPay',
+                    password: document.getElementById('modalPassword').value.trim(),
+                    active: true,
+                };
+
+                if (!newUser.name || !newUser.phone || !newUser.password) {
+                    this.toast('資料還沒填完，再檢查一下', 'warn');
+                    return;
+                }
+
+                this.data.users.push(newUser);
+                this.saveData();
+                this.closeModal();
+                this.renderAdmin();
+            },
+
+            updateUser(userId) {
+                const user = this.data.users.find(u => u.id === userId);
+                if (!user) return;
+
+                user.name = document.getElementById('modalName').value.trim();
+                user.phone = document.getElementById('modalPhone').value.trim();
+                user.role = document.getElementById('modalRole').value;
+                user.channel = document.getElementById('modalChannel').value.trim();
+                user.password = document.getElementById('modalPassword').value.trim();
+                user.active = document.getElementById('modalActive').checked;
+
+                this.saveData();
+                this.closeModal();
+                this.renderAdmin();
+            },
+
+            deleteUser(userId) {
+                if (!confirm('確定要刪除嗎？刪除後就無法復原囉')) return;
+                this.data.users = this.data.users.filter(u => u.id !== userId);
+                this.saveData();
+                this.renderAdmin();
+            },
+
+            openFinanceModal() {
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">新增分期公司</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-label">公司名稱</div>
+                                <input type="text" id="fcName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">備註</div>
+                                <input type="text" id="fcNote" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="fcActive" checked>
+                                    <span>啟用</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.saveFinance()">建立</button>
+                        </div>
+                    </div>
+                `;
+                this.showModal(html);
+            },
+
+            editFinance(fcId) {
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                if (!fc) return;
+
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">編輯分期公司</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-label">公司名稱</div>
+                                <input type="text" id="fcName" class="form-input" value="${fc.name}">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">備註</div>
+                                <input type="text" id="fcNote" class="form-input" value="${fc.note}">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px;">
+                                    <input type="checkbox" id="fcActive" ${fc.active ? 'checked' : ''}>
+                                    <span>啟用</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.updateFinance('${fcId}')">保存</button>
+                        </div>
+                    </div>
+                `;
+                this.showModal(html);
+            },
+
+            saveFinance() {
+                const newFC = {
+                    id: 'fc' + Date.now(),
+                    name: document.getElementById('fcName').value.trim(),
+                    note: document.getElementById('fcNote').value.trim(),
+                    active: document.getElementById('fcActive').checked,
+                    useCoefficient: false,
+                    generalFormula: 'coefficient',
+                    plans: [],
+                };
+
+                if (!newFC.name) {
+                    this.toast('請輸入分期公司名稱', 'warn');
+                    return;
+                }
+
+                this.data.financeCompanies.push(newFC);
+                this.saveData();
+                this.closeModal();
+                this.renderAdmin();
+            },
+
+            updateFinance(fcId) {
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                if (!fc) return;
+
+                fc.name = document.getElementById('fcName').value.trim();
+                fc.note = document.getElementById('fcNote').value.trim();
+                fc.active = document.getElementById('fcActive').checked;
+
+                this.saveData();
+                this.closeModal();
+                this.renderAdmin();
+            },
+
+            deleteFinance(fcId) {
+                if (!confirm('確定要刪除嗎？刪除後就無法復原囉')) return;
+                this.data.financeCompanies = this.data.financeCompanies.filter(f => f.id !== fcId);
+                this.saveData();
+                this.renderAdmin();
+            },
+
+            openStoreModal() {
+                const storeId = null;
+                this.showStoreConfigModal(storeId);
+            },
+
+            editStore(storeId) {
+                this.showStoreConfigModal(storeId);
+            },
+
+            showStoreConfigModal(storeId) {
+                const store = storeId ? this.data.stores.find(s => s.id === storeId) : null;
+                const isEdit = !!store;
+                const title = isEdit ? '編輯通路' : '新增通路';
+                const storeName = store ? store.name : '';
+                const storeNote = store ? store.note : '';
+                const defaultType = store ? (store.defaultType || 'both') : 'both';
+                const fcConfigs = store ? (store.fcConfigs || []) : [];
+
+                const fcHtml = fcConfigs.map((cfg, idx) => {
+                    const fc = this.data.financeCompanies.find(f => f.id === cfg.fcId);
+                    if (!fc) return '';
+
+                    const plans = cfg.plans || [];
+                    const useCoef = !!fc.useCoefficient;
+                    plans.sort((a, b) => a.period - b.period);
+
+                    let planRowsHtml = '';
+                    if (useCoef) {
+                        planRowsHtml = plans.map((p, pi) => {
+                            const irr = p.coefficient > 0 ? this.calculateIRR(Math.round(10000 * p.coefficient), p.period, 10000) : 0;
+                            const irrStr = irr > 0 ? (irr * 100).toFixed(2) + '%' : '—';
+                            return `<div class="st-fc-plan-row" style="grid-template-columns:55px 1fr 1fr 60px 28px">
+                                <div class="pp">${p.period}期</div>
+                                <div><input type="number" step="0.000001" value="${p.coefficient || ''}" placeholder="0.000000" onchange="app.updateStoreFC_Coef(${idx},${pi},this.value);app.renderStoreModalContent('${storeId || 'new'}')"></div>
+                                <div><input type="number" step="0.01" value="${Math.round((p.feeRate || 0) * 10000) / 100 || ''}" placeholder="0.00" onchange="app.updateStoreFC_Fee(${idx},${pi},this.value);app.renderStoreModalContent('${storeId || 'new'}')"></div>
+                                <div style="font-size:11px;font-weight:700;color:var(--red)">${irrStr}</div>
+                                <div><button class="xb" onclick="app.deleteStoreFcPlan(${idx},${pi});app.renderStoreModalContent('${storeId || 'new'}')">×</button></div>
+                            </div>`;
+                        }).join('');
+                    } else {
+                        planRowsHtml = plans.map((p, pi) => {
+                            const fr = p.feeRate || 0;
+                            const mkup = fc.generalFormula === 'markup';
+                            const irr = fr > 0 ? this.calculateIRR(mkup ? Math.round(10000 * (1 + fr) / p.period) : Math.round(10000 / (1 - fr) / p.period), p.period, 10000) : 0;
+                            const irrStr = irr > 0 ? (irr * 100).toFixed(2) + '%' : '—';
+                            return `<div class="st-fc-plan-row" style="grid-template-columns:55px 1fr 60px 28px">
+                                <div class="pp">${p.period}期</div>
+                                <div><input type="number" step="0.01" value="${Math.round(fr * 10000) / 100 || ''}" placeholder="請輸入費率" onchange="app.updateStoreFC_Fee(${idx},${pi},this.value);app.renderStoreModalContent('${storeId || 'new'}')"></div>
+                                <div style="font-size:12px;font-weight:700;color:var(--red)">${irrStr}</div>
+                                <div><button class="xb" onclick="app.deleteStoreFcPlan(${idx},${pi});app.renderStoreModalContent('${storeId || 'new'}')">×</button></div>
+                            </div>`;
+                        }).join('');
+                    }
+
+                    const hdrCols = useCoef ?
+                        '<div class="st-fc-plan-hdr" style="grid-template-columns:55px 1fr 1fr 60px 28px"><div>期數</div><div style="color:var(--gold-deep)">月付係數</div><div style="color:var(--sage-dark)">費率(%)</div><div style="color:var(--red)">IRR</div><div></div></div>' :
+                        '<div class="st-fc-plan-hdr" style="grid-template-columns:55px 1fr 60px 28px"><div>期數</div><div style="color:var(--brand)">報價費率 (%)</div><div style="color:var(--red)">IRR</div><div></div></div>';
+
+                    return `<div class="st-fc-card">
+                        <div class="st-fc-hdr">
+                            <strong>${fc.name}</strong>
+                            <div class="st-fc-acts">
+                                <button class="btn btn-o" style="padding:3px 8px;font-size:11px" onclick="app.resetStoreFcPlans(${idx});app.renderStoreModalContent('${storeId || 'new'}')">📋 載入預設</button>
+                                <button class="btn btn-d" style="padding:3px 8px;font-size:11px" onclick="app.removeStoreFc(${idx});app.renderStoreModalContent('${storeId || 'new'}')">✕ 移除</button>
+                            </div>
+                        </div>
+                        <div class="st-fc-plan-list">
+                            ${hdrCols}
+                            ${planRowsHtml}
+                            <div class="st-fc-add">
+                                <span>新增：</span>
+                                <select id="st-ap-${idx}"><option value="3">3期</option><option value="6">6期</option><option value="9">9期</option><option value="12">12期</option><option value="18">18期</option><option value="24">24期</option><option value="30">30期</option><option value="36">36期</option><option value="48">48期</option><option value="60">60期</option></select>
+                                <button class="btn btn-o" onclick="app.addStoreFcPlan(${idx});app.renderStoreModalContent('${storeId || 'new'}')">+ 加入</button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                const availableFCs = this.data.financeCompanies
+                    .filter(fc => fc.active && !fcConfigs.some(c => c.fcId === fc.id))
+                    .map(fc => `<option value="${fc.id}">${fc.name}</option>`)
+                    .join('');
+
+                const html = `
+                    <div class="modal">
+                        <div class="modal-header">
+                            <div class="modal-title">${title}</div>
+                            <button class="modal-close" onclick="app.closeModal()">✕</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-label">通路名稱</div>
+                                <input type="text" id="storeModalName" class="form-input" value="${this.esc(storeName)}" placeholder="如：旗艦店 A">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">備註</div>
+                                <input type="text" id="storeModalNote" class="form-input" value="${this.esc(storeNote)}" placeholder="地址或說明">
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">預設類型</div>
+                                <select id="storeModalDefType" class="form-select">
+                                    <option value="zero" ${defaultType === 'zero' ? 'selected' : ''}>零利率</option>
+                                    <option value="general" ${defaultType === 'general' ? 'selected' : ''}>一般專案</option>
+                                    <option value="both" ${defaultType === 'both' ? 'selected' : ''}>都有</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="form-label">分期公司設定</div>
+                                ${availableFCs ? `<select id="storeModalAddFc" class="form-select" onchange="app.addStoreFcFromModal()">
+                                    <option value="">— 選擇要加入的分期公司 —</option>
+                                    ${availableFCs}
+                                </select>` : '<div style="color:var(--text-muted);font-size:13px;padding:8px;">所有分期公司已加入</div>'}
+                            </div>
+                            ${fcHtml ? '<div id="storeModalFcList">' + fcHtml + '</div>' : '<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:13px">尚未加入分期公司，請從上方選擇加入</div>'}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="app.closeModal()">取消</button>
+                            <button class="btn btn-primary" onclick="app.${isEdit ? 'updateStore' : 'saveStore'}('${storeId || ''}')">保存</button>
+                        </div>
+                    </div>
+                `;
+
+                this.showModal(html);
+
+                // Store current edit state globally
+                window._storeEditData = {
+                    id: storeId,
+                    fcConfigs: JSON.parse(JSON.stringify(fcConfigs))
+                };
+            },
+
+            renderStoreModalContent(storeId) {
+                // This is called when plan data changes to re-render modal content
+                if (window._storeEditData) {
+                    this.showStoreConfigModal(storeId === 'new' ? null : storeId);
+                }
+            },
+
+            addStoreFcFromModal() {
+                const select = document.getElementById('storeModalAddFc');
+                const fcId = select.value;
+                if (!fcId || !window._storeEditData) return;
+
+                const fc = this.data.financeCompanies.find(f => f.id === fcId);
+                if (!fc) return;
+
+                window._storeEditData.fcConfigs.push({
+                    fcId,
+                    plans: JSON.parse(JSON.stringify(fc.plans))
+                });
+
+                select.value = '';
+                this.renderStoreModalContent(window._storeEditData.id || 'new');
+            },
+
+            removeStoreFc(fcIdx) {
+                if (window._storeEditData && fcIdx < window._storeEditData.fcConfigs.length) {
+                    window._storeEditData.fcConfigs.splice(fcIdx, 1);
+                }
+            },
+
+            resetStoreFcPlans(fcIdx) {
+                if (!window._storeEditData || fcIdx >= window._storeEditData.fcConfigs.length) return;
+                const cfg = window._storeEditData.fcConfigs[fcIdx];
+                const fc = this.data.financeCompanies.find(f => f.id === cfg.fcId);
+                if (fc) {
+                    cfg.plans = JSON.parse(JSON.stringify(fc.plans));
+                }
+            },
+
+            addStoreFcPlan(fcIdx) {
+                if (!window._storeEditData || fcIdx >= window._storeEditData.fcConfigs.length) return;
+                const select = document.getElementById('st-ap-' + fcIdx);
+                const period = parseInt(select.value) || 12;
+                const cfg = window._storeEditData.fcConfigs[fcIdx];
+                const fc = this.data.financeCompanies.find(f => f.id === cfg.fcId);
+                if (!fc || cfg.plans.some(p => p.period === period)) return;
+
+                const masterPlan = fc.plans.find(p => p.period === period);
+                if (masterPlan) {
+                    cfg.plans.push(JSON.parse(JSON.stringify(masterPlan)));
+                    cfg.plans.sort((a, b) => a.period - b.period);
+                }
+            },
+
+            deleteStoreFcPlan(fcIdx, planIdx) {
+                if (!window._storeEditData || fcIdx >= window._storeEditData.fcConfigs.length) return;
+                const cfg = window._storeEditData.fcConfigs[fcIdx];
+                if (planIdx < cfg.plans.length) {
+                    cfg.plans.splice(planIdx, 1);
+                }
+            },
+
+            updateStoreFC_Coef(fcIdx, planIdx, value) {
+                if (!window._storeEditData || fcIdx >= window._storeEditData.fcConfigs.length) return;
+                const cfg = window._storeEditData.fcConfigs[fcIdx];
+                if (planIdx < cfg.plans.length) {
+                    cfg.plans[planIdx].coefficient = parseFloat(value) || 0;
+                }
+            },
+
+            updateStoreFC_Fee(fcIdx, planIdx, value) {
+                if (!window._storeEditData || fcIdx >= window._storeEditData.fcConfigs.length) return;
+                const cfg = window._storeEditData.fcConfigs[fcIdx];
+                if (planIdx < cfg.plans.length) {
+                    cfg.plans[planIdx].feeRate = (parseFloat(value) || 0) / 100;
+                }
+            },
+
+            saveStore() {
+                const name = document.getElementById('storeModalName').value.trim();
+                const note = document.getElementById('storeModalNote').value.trim();
+                const defaultType = document.getElementById('storeModalDefType').value;
+                const fcConfigs = window._storeEditData ? window._storeEditData.fcConfigs : [];
+
+                if (!name) {
+                    this.toast('請幫通路取個名稱', 'warn');
+                    return;
+                }
+
+                if (fcConfigs.length === 0) {
+                    this.toast('至少要配合一家分期公司喔', 'warn');
+                    return;
+                }
+
+                const newStore = {
+                    id: 's' + Date.now(),
+                    name,
+                    note,
+                    defaultType,
+                    fcConfigs: JSON.parse(JSON.stringify(fcConfigs))
+                };
+
+                this.data.stores.push(newStore);
+                this.saveData();
+                this.closeModal();
+                window._storeEditData = null;
+                this.renderAdmin();
+                this.renderCalculator();
+            },
+
+            updateStore(storeId) {
+                const store = this.data.stores.find(s => s.id === storeId);
+                if (!store) return;
+
+                store.name = document.getElementById('storeModalName').value.trim();
+                store.note = document.getElementById('storeModalNote').value.trim();
+                store.defaultType = document.getElementById('storeModalDefType').value;
+                if (window._storeEditData) {
+                    store.fcConfigs = JSON.parse(JSON.stringify(window._storeEditData.fcConfigs));
+                }
+
+                if (store.fcConfigs.length === 0) {
+                    this.toast('至少要保留一家分期公司', 'warn');
+                    return;
+                }
+
+                this.saveData();
+                this.closeModal();
+                window._storeEditData = null;
+                this.renderAdmin();
+                this.renderCalculator();
+            },
+
+            deleteStore(storeId) {
+                if (!confirm('確定要刪除嗎？刪除後就無法復原囉')) return;
+                this.data.stores = this.data.stores.filter(s => s.id !== storeId);
+                this.saveData();
+                this.renderAdmin();
+                this.renderCalculator();
+            },
+
+            exportData() {
+                const dataStr = JSON.stringify(this.data, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `flowhub_data_${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            importDataPrompt() {
+                document.getElementById('importFile').click();
+            },
+
+            importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        this.data = imported;
+                        this.saveData();
+                        this.toast('資料匯入完成 ✨', 'success');
+                        this.renderAdmin();
+                        this.renderCalculator();
+                        this.renderCRM();
+                    } catch (err) {
+                        this.toast('檔案格式有問題，請確認是 JSON 檔', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            // ========== UTILS ==========
+            showModal(html) {
+                const overlay = document.getElementById('modalOverlay');
+                let modal = document.querySelector('.modal');
+                if (modal) modal.remove();
+
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                overlay.parentElement.appendChild(div.firstElementChild);
+                overlay.classList.add('active');
+            },
+
+            closeModal() {
+                const modal = document.querySelector('.modal');
+                if (modal) modal.remove();
+                document.getElementById('modalOverlay').classList.remove('active');
+            },
+
+            toggleCollapse(elementId) {
+                const el = document.getElementById(elementId);
+                el.classList.toggle('active');
+                const icon = document.getElementById(elementId + 'Icon');
+                if (icon) icon.classList.toggle('active');
+            },
+
+            exportCRM() {
+                let customers = this.data.customers;
+                if (this.currentUser.role === 'sales') {
+                    customers = customers.filter(c => c.userId === this.currentUser.id);
+                }
+
+                const headers = ['姓名', '手機', '金額', '分期公司', '期數', '風險等級', '狀態', '婉拒原因', '建立時間', '更新時間'];
+                const rows = customers.map(c => {
+                    const fc = this.data.financeCompanies.find(f => f.id === c.fcId);
+                    const rejLabel = c.rejectionCode ? (this.data.rejectionCodes.find(r => r.code === c.rejectionCode)?.label || '') : '';
+                    return [
+                        c.name,
+                        c.phone,
+                        c.amount,
+                        fc?.name || '',
+                        c.period,
+                        c.riskGrade,
+                        c.status,
+                        rejLabel,
+                        new Date(c.createdAt).toLocaleString('zh-TW'),
+                        new Date(c.updatedAt).toLocaleString('zh-TW'),
+                    ];
+                });
+
+                this.downloadCSV(headers, rows, 'FlowHub_客戶名單');
+            },
+
+            exportDashboard() {
+                let customers = this.data.customers;
+                if (this.currentUser.role === 'sales') {
+                    customers = customers.filter(c => c.userId === this.currentUser.id);
+                }
+
+                // Per-user stats
+                const userMap = {};
+                customers.forEach(c => {
+                    const user = this.data.users.find(u => u.id === c.userId);
+                    const name = user?.name || '未知';
+                    if (!userMap[name]) userMap[name] = { submit: 0, approve: 0, total: 0 };
+                    if (['審核中', '已核准', '已撥款'].includes(c.status)) userMap[name].submit++;
+                    if (['已核准', '已撥款'].includes(c.status)) userMap[name].approve++;
+                    userMap[name].total += c.amount;
+                });
+
+                const headers = ['業務', '送件數', '核准數', '核准率', '總金額'];
+                const rows = Object.entries(userMap).map(([name, d]) => [
+                    name, d.submit, d.approve,
+                    d.submit > 0 ? Math.round((d.approve / d.submit) * 100) + '%' : '0%',
+                    d.total,
+                ]);
+
+                this.downloadCSV(headers, rows, 'FlowHub_業績報表');
+            },
+
+            downloadCSV(headers, rows, filename) {
+                const BOM = '\uFEFF';
+                const csv = BOM + [headers.join(','), ...rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))].join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+        };
+
+        // ========== INIT ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
