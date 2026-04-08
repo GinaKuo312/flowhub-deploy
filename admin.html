@@ -1413,12 +1413,6 @@
             <input type="password" id="loginPassword" class="login-input" placeholder="密碼">
             <button class="login-btn" onclick="app.login()">登入</button>
             <div id="loginError" class="login-error"></div>
-            <div class="demo-accounts">
-                <p><strong>示範帳號：</strong></p>
-                <p>👤 <strong>業務</strong>：0900000003 / 1234</p>
-                <p>👤 <strong>主管</strong>：0900000002 / 1234</p>
-                <p>👤 <strong>總控</strong>：0900000001 / Aa1234</p>
-            </div>
         </div>
     </div>
 
@@ -2167,7 +2161,7 @@
         };
 
         // ========== APP STATE ==========
-        const app = {
+        var app = {
             currentUser: null,
             currentTab: 1,
             crmFilter: '全部',
