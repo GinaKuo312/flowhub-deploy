@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHub 月付金試算系統</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>💫</text></svg>">
+<style>
+  :root{
+    /* FlowHub Gold/Champagne Palette */
+    --brand:#8b7355;--brand-light:#a08968;--brand-dark:#6b5740;
+    --gold:#c9a96e;--gold-light:#dcc9a5;--gold-lighter:#efe3cc;--gold-pale:#f8f2e8;--gold-deep:#b8944a;
+    --champagne:#d4b896;--champagne-light:#e8d5b8;
+    --cream:#faf7f2;--cream-dark:#f2ece3;--cream-deep:#e8dfd3;
+    --text:#4a4240;--text-light:#7a706a;--text-muted:#a89e94;
+    --sage:#6a8a6a;--sage-bg:#eef5ee;--sage-lt:#d4e8d4;--sage-dark:#3e6e3e;
+    --white:#ffffff;
+    --g50:#faf8f6;--g100:#f5f0ea;--g200:#e8e0d6;--g300:#d6ccc0;--g400:#a89e94;--g500:#7a706a;--g600:#5c544e;--g700:#3e3836;--g800:#2a2624;
+    --radius:12px;--radius-lg:16px;
+    --shadow:0 2px 8px rgba(107,87,64,.06);--shadow-md:0 8px 24px rgba(107,87,64,.1);--shadow-lg:0 12px 40px rgba(107,87,64,.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI','Microsoft JhengHei',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+
+  /* NAV */
+  .nav{background:linear-gradient(135deg,#3e3430 0%,#5c4a3e 40%,#6b5740 100%);padding:0 28px;display:flex;align-items:center;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(62,52,48,.25)}
+  .nav-brand{font-size:17px;font-weight:700;color:#fff;margin-right:32px;white-space:nowrap;display:flex;align-items:center;gap:6px;letter-spacing:.5px}
+  .nav-brand .brand-name{font-style:italic;letter-spacing:.8px;font-size:19px}
+  .nav-brand .brand-sep{opacity:.3;font-weight:300;margin:0 2px}
+  .nav-brand .brand-desc{font-size:13px;opacity:.55;font-weight:400;letter-spacing:.3px}
+
+  .container{max-width:960px;margin:0 auto;padding:24px 20px}
+  .card{background:var(--white);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);border:1px solid rgba(201,169,110,.12);overflow:hidden}
+  .card-body{padding:24px}
+
+  /* ===== FRONT - Premium Design ===== */
+  .front-card{border:none;box-shadow:var(--shadow-lg);border-radius:20px;overflow:hidden}
+
+  .store-banner{
+    background:linear-gradient(135deg,#4a3f35 0%,#5c4a3e 30%,#6b5740 60%,#7a6550 100%);
+    padding:28px 32px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;
+    position:relative;overflow:hidden
+  }
+  .store-banner::before{
+    content:'';position:absolute;top:-50%;right:-20%;width:300px;height:300px;
+    background:radial-gradient(circle,rgba(201,169,110,.15) 0%,transparent 70%);border-radius:50%
+  }
+  .store-banner::after{
+    content:'';position:absolute;bottom:-30%;left:10%;width:200px;height:200px;
+    background:radial-gradient(circle,rgba(212,184,150,.1) 0%,transparent 70%);border-radius:50%
+  }
+  .store-name{font-size:26px;font-weight:800;letter-spacing:1px;position:relative;z-index:1;text-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .store-sub{font-size:12px;opacity:.5;margin-top:4px;position:relative;z-index:1;font-weight:300;letter-spacing:.5px}
+  .store-sel{padding:8px 14px;border-radius:8px;border:1px solid rgba(201,169,110,.3);background:rgba(255,255,255,.08);color:#fff;font-size:13px;outline:none;cursor:pointer;backdrop-filter:blur(4px);position:relative;z-index:1;transition:.2s}
+  .store-sel:hover{background:rgba(255,255,255,.12);border-color:rgba(201,169,110,.5)}
+  .store-sel option{color:#333;background:#fff}
+
+  /* Amount Input - Premium */
+  .calc-input-area{
+    padding:30px 32px;display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;
+    background:linear-gradient(180deg,var(--gold-pale) 0%,var(--white) 100%);
+    border-bottom:1px solid var(--g200)
+  }
+  .calc-f{display:flex;flex-direction:column;gap:8px;flex:1;min-width:200px}
+  .calc-f label{font-size:12px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:1.5px}
+  .input-wrap{position:relative;display:flex;align-items:center}
+  .input-wrap .currency{position:absolute;left:16px;font-size:20px;font-weight:700;color:var(--gold);z-index:1}
+  .calc-f input[type="text"]{
+    width:100%;padding:16px 18px 16px 42px;
+    border:2px solid var(--g300);border-radius:12px;
+    font-size:24px;font-weight:800;outline:none;
+    background:var(--white);color:var(--brand-dark);
+    transition:.25s;letter-spacing:1px;
+    box-shadow:inset 0 2px 4px rgba(107,87,64,.04)
+  }
+  .calc-f input[type="text"]:focus{
+    border-color:var(--gold);
+    box-shadow:0 0 0 4px rgba(201,169,110,.15),inset 0 2px 4px rgba(107,87,64,.04)
+  }
+  .calc-f input[type="text"]::placeholder{color:var(--g400);font-weight:400;font-size:16px;letter-spacing:0}
+  .fc-select{
+    width:100%;padding:14px 14px;border:2px solid var(--g300);border-radius:12px;
+    font-size:15px;font-weight:600;outline:none;background:var(--white);color:var(--brand-dark);
+    cursor:pointer;transition:.25s;appearance:auto
+  }
+  .fc-select:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,169,110,.15)}
+  .amt-preview{font-size:14px;color:var(--text-light);align-self:center;white-space:nowrap;padding-bottom:8px}
+  .amt-preview b{color:var(--brand-dark);font-size:16px}
+
+  /* Plan Toggle - Elegant */
+  .toggle-section{padding:20px 32px}
+  .type-toggle{display:flex;border-radius:14px;overflow:hidden;border:2px solid var(--g200);background:var(--cream);position:relative}
+  .type-btn{
+    flex:1;padding:16px 12px;border:none;background:transparent;cursor:pointer;
+    font-size:15px;font-weight:700;transition:.3s;text-align:center;color:var(--g400);
+    position:relative;z-index:1
+  }
+  .type-btn:first-child{border-right:1px solid var(--g200)}
+  .type-btn.sel-zero{background:linear-gradient(135deg,var(--sage-bg),#e0f0e0);color:var(--sage-dark);border-color:var(--sage);box-shadow:inset 0 2px 8px rgba(106,138,106,.1)}
+  .type-btn.sel-gen{background:linear-gradient(135deg,var(--gold-pale),var(--gold-lighter));color:var(--brand-dark);border-color:var(--gold);box-shadow:inset 0 2px 8px rgba(201,169,110,.1)}
+  .type-btn:hover:not(.sel-zero):not(.sel-gen){background:rgba(201,169,110,.06)}
+  .type-sub{font-size:11px;font-weight:400;display:block;margin-top:4px;opacity:.55}
+
+  /* Results - Premium Cards */
+  .res-area{padding:20px 32px 32px}
+  .res-section{border-radius:14px;overflow:hidden;border:1px solid var(--g200);margin-bottom:16px;box-shadow:var(--shadow);transition:.2s}
+  .res-section:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+  .res-hdr{padding:14px 20px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:10px}
+  .res-hdr.zh{background:linear-gradient(135deg,var(--sage-bg),#e0f0e0);color:var(--sage-dark);border-bottom:2px solid var(--sage-lt)}
+  .res-hdr.gh{background:linear-gradient(135deg,var(--gold-pale),var(--gold-lighter));color:var(--brand-dark);border-bottom:2px solid var(--gold-lighter)}
+  .res-hdr .pill{font-size:11px;padding:3px 10px;border-radius:12px;margin-left:auto;font-weight:700}
+  .res-hdr.zh .pill{background:var(--sage-lt);color:var(--sage-dark)}
+  .res-hdr.gh .pill{background:var(--gold-lighter);color:var(--brand)}
+
+  .rt{width:100%;border-collapse:collapse}
+  .rt th{padding:10px 18px;font-size:12px;font-weight:700;text-align:center;border-bottom:2px solid var(--g200);letter-spacing:.5px}
+  .rt.zt th{background:#f5faf5;color:var(--sage)}
+  .rt.gt th{background:var(--gold-pale);color:var(--gold-deep)}
+  .rt td{padding:14px 18px;text-align:center;font-size:14px;border-bottom:1px solid var(--g100)}
+  .rt tr:nth-child(even) td{background:var(--g50)}
+  .rt tr:hover td{background:var(--cream-dark)}
+  .rt .period{font-weight:700;color:var(--g600);font-size:15px}
+  .rt .monthly{font-size:20px;font-weight:800;color:var(--brand-dark);letter-spacing:.5px}
+
+  .no-msg{padding:40px;text-align:center;color:var(--g400);font-size:15px}
+  .no-msg .no-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+  /* Powered by footer */
+  .powered-by{text-align:center;padding:14px;font-size:11px;color:var(--text-muted);letter-spacing:.5px;border-top:1px solid var(--g100)}
+  .powered-by strong{color:var(--gold);font-weight:700}
+
+  /* Copyright watermark */
+  .copyright-bar{text-align:center;padding:10px;font-size:10px;color:var(--text-muted);letter-spacing:.3px;background:var(--cream-dark);border-top:1px solid var(--g200)}
+
+  .hidden{display:none!important}
+
+  @media(max-width:768px){
+    .calc-input-area{flex-direction:column;padding:24px 20px}
+    .calc-f{max-width:100%!important;min-width:0!important}
+    .container{padding:16px 12px}
+    .type-toggle{flex-direction:column}
+    .type-btn:first-child{border-right:none;border-bottom:1px solid var(--g200)}
+    .store-banner{padding:20px}
+    .store-name{font-size:20px}
+    .toggle-section{padding:16px 20px}
+    .res-area{padding:16px 20px 24px}
+    .calc-f input[type="text"]{font-size:20px;padding:14px 16px 14px 38px}
+    .input-wrap .currency{font-size:18px;left:14px}
+    .nav{padding:0 16px}
+    .nav-brand{font-size:14px;margin-right:12px;gap:4px}
+    .nav-brand .brand-name{font-size:16px}
+    .nav-brand .brand-sep{display:none}
+    .nav-brand .brand-desc{font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <span class="brand-name">FlowHub</span>
+    <span class="brand-sep">|</span>
+    <span class="brand-desc">分期付款月付金試算</span>
+  </div>
+</nav>
+
+<!-- ====== FRONT ====== -->
+<div id="pg-calc" class="container">
+  <div class="card front-card">
+    <div class="store-banner">
+      <div>
+        <div class="store-name" id="front-store-name">商家名稱</div>
+        <div class="store-sub">FlowHub 分期付款試算</div>
+      </div>
+    </div>
+
+    <div class="calc-input-area">
+      <div class="calc-f" style="max-width:340px">
+        <label>商品總金額</label>
+        <div class="input-wrap">
+          <span class="currency">$</span>
+          <input type="text" id="c-amt" value="" inputmode="numeric" placeholder="請輸入金額" oninput="onAmtInput(this)" onblur="onAmtBlur(this)">
+        </div>
+      </div>
+      <div class="calc-f" style="max-width:240px">
+        <label>分期公司</label>
+        <select id="c-fc" class="fc-select" onchange="calc()">
+          <option value="all">全部顯示</option>
+        </select>
+      </div>
+      <div class="amt-preview" id="amt-preview"></div>
+    </div>
+
+    <div class="toggle-section">
+      <div class="type-toggle">
+        <button class="type-btn" data-t="general" onclick="setType('general')">
+          一般專案<span class="type-sub">利息分攤在客人月付金</span>
+        </button>
+        <button class="type-btn" data-t="zero" onclick="setType('zero')">
+          零利率<span class="type-sub">店家負擔手續費</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="res-area" id="calc-result"></div>
+    <div class="powered-by">Powered by <strong>FlowHub</strong></div>
+  </div>
+</div>
+
+<div class="copyright-bar">&copy; 2026 FlowHub. All rights reserved.</div>
+
+<script>
+// ===== Config Loading from URL Hash =====
+let storeConfig = null;
+let rawAmt = 0;
+let selType = 'general';
+
+function loadConfigFromHash() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) {
+    showNoConfig();
+    return false;
+  }
+
+  try {
+    const params = new URLSearchParams(hash);
+    const configB64 = params.get('c');
+    if (!configB64) {
+      showNoConfig();
+      return false;
+    }
+
+    // Decode base64
+    const configJson = atob(configB64);
+    storeConfig = JSON.parse(configJson);
+
+    // Validate config structure
+    if (!storeConfig.n || !Array.isArray(storeConfig.f)) {
+      showNoConfig();
+      return false;
+    }
+
+    return true;
+  } catch (e) {
+    showNoConfig();
+    return false;
+  }
+}
+
+function showNoConfig() {
+  document.getElementById('calc-result').innerHTML =
+    '<div class="no-msg"><div class="no-icon">⚠️</div>此連結無效或缺少商家設定<br><span style="font-size:12px;margin-top:6px;display:inline-block">請聯繫您的服務人員取得正確連結</span></div>';
+  document.getElementById('front-store-name').textContent = '設定錯誤';
+  document.getElementById('c-amt').disabled = true;
+  document.getElementById('c-fc').disabled = true;
+  document.querySelectorAll('.type-btn').forEach(b => b.disabled = true);
+}
+
+function initUI() {
+  // Set store name
+  document.getElementById('front-store-name').textContent = storeConfig.n;
+
+  // Set default type from config if specified
+  if (storeConfig.t) {
+    selType = storeConfig.t;
+  }
+
+  // Populate FC dropdown
+  const fcSelect = document.getElementById('c-fc');
+  storeConfig.f.forEach((fc, idx) => {
+    const option = document.createElement('option');
+    option.value = idx.toString();
+    option.textContent = fc.n;
+    fcSelect.appendChild(option);
+  });
+
+  // Update toggle button
+  updToggle();
+
+  // Initial calculation
+  calc();
+}
+
+// ===== Formatting Utilities =====
+function fmt(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function onAmtInput(el) {
+  const val = el.value.replace(/[^0-9]/g, '');
+  rawAmt = parseInt(val, 10) || 0;
+  el.value = fmt(rawAmt);
+  document.getElementById('amt-preview').innerHTML = rawAmt > 0 ? `金額：<b>$${fmt(rawAmt)}</b>` : '';
+  calc();
+}
+
+function onAmtBlur(el) {
+  if (rawAmt === 0) {
+    el.value = '';
+    document.getElementById('amt-preview').innerHTML = '';
+  }
+}
+
+function setType(t) {
+  selType = t;
+  updToggle();
+  calc();
+}
+
+function updToggle() {
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.remove('sel-zero', 'sel-gen');
+    if (b.dataset.t === selType) {
+      b.classList.add(selType === 'zero' ? 'sel-zero' : 'sel-gen');
+    }
+  });
+}
+
+// ===== Calculation Logic =====
+function calc() {
+  const amt = rawAmt;
+  if (amt <= 0) {
+    document.getElementById('calc-result').innerHTML =
+      '<div class="no-msg"><div class="no-icon">💰</div>請輸入商品金額開始試算</div>';
+    return;
+  }
+
+  const fcSelectVal = document.getElementById('c-fc').value;
+  let fcList;
+
+  if (fcSelectVal === 'all') {
+    fcList = storeConfig.f;
+  } else {
+    const idx = parseInt(fcSelectVal, 10);
+    fcList = [storeConfig.f[idx]];
+  }
+
+  const isZ = selType === 'zero';
+  let h = '';
+  let hasResults = false;
+
+  fcList.forEach(fc => {
+    // Filter plans by type
+    const plans = (fc.p || []).filter(p => {
+      if (isZ) {
+        // For zero interest: plan type "z" or "b" (both)
+        return p[1] === 'z' || p[1] === 'b';
+      } else {
+        // For general: plan type "g" or "b" (both)
+        return p[1] === 'g' || p[1] === 'b';
+      }
+    }).sort((a, b) => a[0] - b[0]); // Sort by period
+
+    if (plans.length === 0) return;
+
+    hasResults = true;
+    h += `<div class="res-section"><div class="res-hdr ${isZ ? 'zh' : 'gh'}">${esc(fc.n)}<span class="pill">${plans.length} 期數</span></div>`;
+
+    if (isZ) {
+      // Zero interest calculation
+      h += `<table class="rt zt"><thead><tr><th>期數</th><th>每月金額</th></tr></thead><tbody>`;
+      plans.forEach(p => {
+        const period = p[0];
+        const feeRate = p[3] || 0;
+        const monthly = Math.round(amt / period);
+        h += `<tr><td class="period">${period} 期</td><td class="monthly">$${fmt(monthly)}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    } else {
+      // General project calculation
+      h += `<table class="rt gt"><thead><tr><th>期數</th><th>每月金額</th><th>總繳金額</th></tr></thead><tbody>`;
+      plans.forEach(p => {
+        const period = p[0];
+        const coefficient = p[2] || 0;
+        const feeRate = p[3] || 0;
+        let monthly;
+
+        // Determine calculation method based on config
+        if (fc.c && coefficient > 0) {
+          // Use coefficient if flag is set and coefficient > 0
+          monthly = Math.round(amt * coefficient);
+        } else if (feeRate > 0) {
+          // Use formula based on generalFormula flag
+          if (fc.g === 'markup') {
+            // markup: amount × (1 + feeRate) / period
+            monthly = Math.round(amt * (1 + feeRate) / period);
+          } else {
+            // grossup (default): amount / (1 - feeRate) / period
+            monthly = Math.round(amt / (1 - feeRate) / period);
+          }
+        } else {
+          // No coefficient or fee, simple division
+          monthly = Math.round(amt / period);
+        }
+
+        const total = monthly * period;
+        h += `<tr><td class="period">${period} 期</td><td class="monthly">$${fmt(monthly)}</td><td>$${fmt(total)}</td></tr>`;
+      });
+      h += `</tbody></table>`;
+    }
+    h += `</div>`;
+  });
+
+  if (!hasResults) {
+    const planType = isZ ? '零利率' : '一般專案';
+    document.getElementById('calc-result').innerHTML =
+      `<div class="no-msg"><div class="no-icon">📋</div>目前沒有${planType}方案可用<br><span style="font-size:12px;margin-top:6px;display:inline-block">請切換方案類型</span></div>`;
+  } else {
+    document.getElementById('calc-result').innerHTML = h;
+  }
+}
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// ===== Init =====
+window.addEventListener('DOMContentLoaded', function() {
+  if (loadConfigFromHash()) {
+    initUI();
+  }
+});
+</script>
+
+</body>
+</html>

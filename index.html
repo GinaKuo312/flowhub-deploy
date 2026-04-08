@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FlowHub - 分期成交決策系統。幫助零售店舖輕鬆管理分期付款申請與風險評估。">
+    <title>FlowHub - 分期成交決策系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --brand: #8b7355;
+            --brand-light: #a08968;
+            --brand-dark: #6b5740;
+            --gold: #c9a96e;
+            --gold-light: #dcc9a5;
+            --gold-lighter: #efe3cc;
+            --gold-pale: #f8f2e8;
+            --cream: #faf7f2;
+            --text: #4a4240;
+            --sage: #6a8a6a;
+            --sage-bg: #eef5ee;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            background-color: var(--cream);
+            line-height: 1.6;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: linear-gradient(135deg, var(--cream) 0%, var(--gold-pale) 100%);
+            padding: 1.5rem 0;
+            border-bottom: 2px solid var(--gold-light);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.08);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--brand);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-cn {
+            font-size: 0.9rem;
+            color: var(--brand-light);
+            margin-top: 0.2rem;
+            font-weight: 500;
+        }
+
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            color: var(--gold);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--gold-pale) 0%, var(--cream) 50%, var(--sage-bg) 100%);
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .hero-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            color: var(--brand);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .hero .tagline {
+            font-size: 1.4rem;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.95rem 2.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(201, 169, 110, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(201, 169, 110, 0.35);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--brand);
+            border: 2px solid var(--brand);
+        }
+
+        .btn-secondary:hover {
+            background: var(--brand);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 2rem;
+            background: white;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            color: var(--brand);
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 3rem;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, var(--gold-pale) 0%, var(--cream) 100%);
+            padding: 2.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid var(--gold);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(139, 115, 85, 0.08);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(139, 115, 85, 0.12);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            color: var(--brand);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--text);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            opacity: 0.85;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .cta-section p {
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            line-height: 1.7;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-light {
+            background: white;
+            color: var(--brand);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            background: var(--gold-pale);
+        }
+
+        .btn-outline-light {
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+        }
+
+        .btn-outline-light:hover {
+            background: white;
+            color: var(--brand);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            text-align: center;
+            padding: 2.5rem 2rem;
+            font-size: 0.9rem;
+        }
+
+        footer p {
+            opacity: 0.85;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero .tagline {
+                font-size: 1.1rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .hero {
+                padding: 3rem 1.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .features {
+                padding: 3rem 1.5rem;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-buttons .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.7rem;
+            }
+
+            .hero .tagline {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-icon {
+                font-size: 2.5rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .feature-card p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div>
+                <div class="logo">FlowHub</div>
+                <div class="logo-cn">分期成交決策系統</div>
+            </div>
+            <nav>
+                <a href="#features">功能特色</a>
+                <a href="#cta">立即開始</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <h1>FlowHub</h1>
+            <p class="tagline">讓分期成交更簡單</p>
+            <p>
+                FlowHub 是專為醫美、保健補給、課程和高客單零售店舖設計的智能分期管理系統。
+                輕鬆比較金融公司方案、管理客戶申請、做出更聰明的分期決策。
+            </p>
+            <div class="hero-buttons">
+                <a href="/admin" class="btn btn-primary">管理後台登入</a>
+                <a href="/apply" class="btn btn-secondary">免費評估申請</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <h2 class="section-title">核心功能</h2>
+            <p class="section-subtitle">提升分期決策效率，讓交易更簡單</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>智慧試算</h3>
+                    <p>
+                        一秒鐘計算多家金融公司的分期方案，
+                        自動比較利率、手續費和還款條件，
+                        幫助客戶快速做出最佳選擇。
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚖️</div>
+                    <h3>風險評估</h3>
+                    <p>
+                        智能化分析客戶信用風險，
+                        自動評估核准機率，
+                        降低壞帳風險，保護店舖利益。
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>CRM 管理</h3>
+                    <p>
+                        集中管理客戶信息與申請進度，
+                        追蹤分期案件全生命週期，
+                        提升客戶體驗與服務品質。
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>多通路管理</h3>
+                    <p>
+                        無縫整合線上線下銷售渠道，
+                        統一管理所有分期申請，
+                        實現全渠道運營戰略。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="cta">
+        <div class="cta-container">
+            <h2>準備好簡化你的分期管理了嗎？</h2>
+            <p>
+                加入數百家零售店舖，透過 FlowHub 提升分期成交率與客戶滿意度。
+                免費評估你的店舖需求，找到最適合的解決方案。
+            </p>
+            <div class="cta-buttons">
+                <a href="/admin" class="btn btn-light">進入管理後台</a>
+                <a href="/apply" class="btn btn-outline-light">免費評估</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 FlowHub. 保留所有權利。</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; opacity: 0.7;">分期成交決策系統</p>
+    </footer>
+</body>
+</html>
