@@ -6,9 +6,9 @@ var supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPA
 // ========== DATA STRUCTURES ==========
 var DEFAULT_DATA = {
     users: [
-        { id: 'u1', name: 'Gina', phone: '0900000001', role: 'admin', password: 'Aa1234', active: true, channel: 'FlowPay' },
-        { id: 'u2', name: '王經理', phone: '0900000002', role: 'manager', password: '1234', active: true, channel: 'FlowPay' },
-        { id: 'u3', name: '李業務', phone: '0900000003', role: 'sales', password: '1234', active: true, channel: 'e01' },
+        { id: 'u1', name: 'Gina', phone: '0900000001', role: 'admin', password: 'Aa1234', active: true, storeId: '' },
+        { id: 'u2', name: '王經理', phone: '0900000002', role: 'manager', password: '1234', active: true, storeId: 's1' },
+        { id: 'u3', name: '李業務', phone: '0900000003', role: 'sales', password: '1234', active: true, storeId: 's1' },
     ],
     financeCompanies: [
         {
@@ -266,7 +266,7 @@ var app = {
             this.data = {
                 users: (usersRes.data || []).map(u => ({
                     id: u.id, name: u.name, phone: u.phone, role: u.role,
-                    channel: u.channel, password: u.password_hash, active: u.active
+                    storeId: u.store_id || '', password: u.password_hash, active: u.active
                 })),
                 financeCompanies: (fcRes.data || []).map(fc => ({
                     id: fc.id, name: fc.name, note: fc.note, active: fc.active,
@@ -358,7 +358,7 @@ var app = {
         if (!supabase) return;
         await supabase.from('fh_users').upsert({
             id: user.id, name: user.name, phone: user.phone, role: user.role,
-            channel: user.channel, password_hash: user.password, active: user.active
+            store_id: user.storeId || '', password_hash: user.password, active: user.active
         });
     },
 
@@ -500,10 +500,27 @@ var app = {
     // ========== CALCULATOR ==========
     renderCalculator() {
         const storeSelect = document.getElementById('storeSelector');
-        storeSelect.innerHTML = '<option value="">-- 請選擇店家 --</option>';
-        this.data.stores.forEach(store => {
-            storeSelect.innerHTML += `<option value="${store.id}">${store.name}</option>`;
-        });
+        const userStoreId = this.currentUser ? this.currentUser.storeId : '';
+        const isAdmin = this.currentUser && this.currentUser.role === 'admin';
+
+        if (isAdmin) {
+            // Admin can choose any store
+            storeSelect.innerHTML = '<option value="">-- 請選擇店家 --</option>';
+            this.data.stores.forEach(store => {
+                storeSelect.innerHTML += `<option value="${store.id}">${store.name}</option>`;
+            });
+            storeSelect.disabled = false;
+        } else if (userStoreId) {
+            // Non-admin: auto-select their store and lock it
+            const store = this.data.stores.find(s => s.id === userStoreId);
+            storeSelect.innerHTML = store
+                ? `<option value="${store.id}">${store.name}</option>`
+                : '<option value="">-- 未指定通路 --</option>';
+            storeSelect.disabled = true;
+        } else {
+            storeSelect.innerHTML = '<option value="">-- 未指定通路 --</option>';
+            storeSelect.disabled = true;
+        }
 
         this.filterFCsByStore();
     },
@@ -719,7 +736,7 @@ var app = {
             if (Math.abs(dpv) < 0.0001) break;
             rate -= npv / dpv;
         }
-        return Math.max(0, rate / 12);
+        return Math.max(0, rate * 12);
     },
 
     // ========== IMPORT CUSTOMER DATA ==========
@@ -1238,7 +1255,7 @@ var app = {
             rejectionNote: '',
             notes: [],
             userId: this.currentUser.id,
-            channel: this.currentUser.channel,
+            channel: this.currentUser.storeId || 'admin',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             submissions: [],
@@ -1257,10 +1274,15 @@ var app = {
     renderCRM() {
         let customers = this.data.customers;
 
-        // Filter by role
+        // Filter by role and store
         if (this.currentUser.role === 'sales') {
+            // Sales: only see own customers
             customers = customers.filter(c => c.userId === this.currentUser.id);
+        } else if (this.currentUser.role === 'manager' && this.currentUser.storeId) {
+            // Manager: see all customers in their store
+            customers = customers.filter(c => c.storeId === this.currentUser.storeId);
         }
+        // Admin: sees all customers (no filter)
 
         // Filter by search
         const search = document.getElementById('crmSearch').value.toLowerCase();
@@ -1449,7 +1471,7 @@ var app = {
             notes: note ? [{ text: note, author: this.currentUser.name, timestamp: new Date().toISOString() }] : [],
             statusHistory: [],
             userId: this.currentUser.id,
-            channel: this.currentUser.channel,
+            channel: this.currentUser.storeId || 'admin',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             submissions: [],
@@ -1801,17 +1823,20 @@ var app = {
 
         // Users
         const usersBody = document.getElementById('usersTableBody');
-        usersBody.innerHTML = this.data.users.map(user => `
-            <tr>
+        usersBody.innerHTML = this.data.users.map(user => {
+            const store = user.storeId ? this.data.stores.find(s => s.id === user.storeId) : null;
+            const storeName = user.role === 'admin' ? '全部通路' : (store ? store.name : '<span style="color:var(--red)">未指定</span>');
+            return `<tr>
                 <td>${this.esc(user.name)}</td>
                 <td>${this.esc(user.phone)}</td>
                 <td>${this.getRoleName(user.role)}</td>
+                <td>${storeName}</td>
                 <td>
                     <button class="btn btn-small" onclick="app.editUser('${this.esc(user.id)}')">編輯</button>
                     <button class="btn btn-small btn-danger" onclick="app.deleteUser('${this.esc(user.id)}')">刪除</button>
                 </td>
-            </tr>
-        `).join('');
+            </tr>`;
+        }).join('');
 
         // Finance Companies
         const financeBody = document.getElementById('financeTableBody');
@@ -1852,6 +1877,9 @@ var app = {
     },
 
     openUserModal() {
+        const storeOptions = this.data.stores.map(s =>
+            `<option value="${s.id}">${this.esc(s.name)}</option>`
+        ).join('');
         const html = `
             <div class="modal">
                 <div class="modal-header">
@@ -1869,15 +1897,18 @@ var app = {
                     </div>
                     <div class="form-group">
                         <div class="form-label">角色</div>
-                        <select id="modalRole" class="form-select">
+                        <select id="modalRole" class="form-select" onchange="document.getElementById('modalStoreGroup').style.display = this.value === 'admin' ? 'none' : 'block'">
                             <option value="sales">業務</option>
                             <option value="manager">主管</option>
                             <option value="admin">總控</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <div class="form-label">管道</div>
-                        <input type="text" id="modalChannel" class="form-input" placeholder="FlowPay">
+                    <div class="form-group" id="modalStoreGroup">
+                        <div class="form-label">所屬通路</div>
+                        <select id="modalStoreId" class="form-select">
+                            <option value="">— 請選擇通路 —</option>
+                            ${storeOptions}
+                        </select>
                     </div>
                     <div class="form-group">
                         <div class="form-label">密碼</div>
@@ -1897,6 +1928,10 @@ var app = {
         const user = this.data.users.find(u => u.id === userId);
         if (!user) return;
 
+        const storeOptions = this.data.stores.map(s =>
+            `<option value="${s.id}" ${user.storeId === s.id ? 'selected' : ''}>${this.esc(s.name)}</option>`
+        ).join('');
+        const hideStore = user.role === 'admin' ? 'none' : 'block';
         const html = `
             <div class="modal">
                 <div class="modal-header">
@@ -1906,27 +1941,30 @@ var app = {
                 <div class="modal-body">
                     <div class="form-group">
                         <div class="form-label">姓名</div>
-                        <input type="text" id="modalName" class="form-input" value="${user.name}">
+                        <input type="text" id="modalName" class="form-input" value="${this.esc(user.name)}">
                     </div>
                     <div class="form-group">
                         <div class="form-label">手機</div>
-                        <input type="text" id="modalPhone" class="form-input" value="${user.phone}">
+                        <input type="text" id="modalPhone" class="form-input" value="${this.esc(user.phone)}">
                     </div>
                     <div class="form-group">
                         <div class="form-label">角色</div>
-                        <select id="modalRole" class="form-select">
+                        <select id="modalRole" class="form-select" onchange="document.getElementById('modalStoreGroup').style.display = this.value === 'admin' ? 'none' : 'block'">
                             <option value="sales" ${user.role === 'sales' ? 'selected' : ''}>業務</option>
                             <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>主管</option>
                             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>總控</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <div class="form-label">管道</div>
-                        <input type="text" id="modalChannel" class="form-input" value="${user.channel}">
+                    <div class="form-group" id="modalStoreGroup" style="display:${hideStore}">
+                        <div class="form-label">所屬通路</div>
+                        <select id="modalStoreId" class="form-select">
+                            <option value="">— 請選擇通路 —</option>
+                            ${storeOptions}
+                        </select>
                     </div>
                     <div class="form-group">
                         <div class="form-label">密碼</div>
-                        <input type="password" id="modalPassword" class="form-input" value="${user.password}">
+                        <input type="password" id="modalPassword" class="form-input" value="${this.esc(user.password)}">
                     </div>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 8px;">
@@ -1945,18 +1983,25 @@ var app = {
     },
 
     saveUser() {
+        const role = document.getElementById('modalRole').value;
+        const storeId = role === 'admin' ? '' : (document.getElementById('modalStoreId').value || '');
         const newUser = {
             id: 'u' + Date.now(),
             name: document.getElementById('modalName').value.trim(),
             phone: document.getElementById('modalPhone').value.trim(),
-            role: document.getElementById('modalRole').value,
-            channel: document.getElementById('modalChannel').value.trim() || 'FlowPay',
+            role,
+            storeId,
             password: document.getElementById('modalPassword').value.trim(),
             active: true,
         };
 
         if (!newUser.name || !newUser.phone || !newUser.password) {
             this.toast('資料還沒填完，再檢查一下', 'warn');
+            return;
+        }
+
+        if (role !== 'admin' && !storeId) {
+            this.toast('請選擇所屬通路', 'warn');
             return;
         }
 
@@ -1971,10 +2016,11 @@ var app = {
         const user = this.data.users.find(u => u.id === userId);
         if (!user) return;
 
+        const role = document.getElementById('modalRole').value;
         user.name = document.getElementById('modalName').value.trim();
         user.phone = document.getElementById('modalPhone').value.trim();
-        user.role = document.getElementById('modalRole').value;
-        user.channel = document.getElementById('modalChannel').value.trim();
+        user.role = role;
+        user.storeId = role === 'admin' ? '' : (document.getElementById('modalStoreId').value || '');
         user.password = document.getElementById('modalPassword').value.trim();
         user.active = document.getElementById('modalActive').checked;
 
@@ -2511,4 +2557,5 @@ var app = {
 // ========== EXPOSE TO GLOBAL SCOPE ==========
 window.app = app;
 
+// ========== INIT ==========
 // Init is called by bootstrap script in admin.html after this file loads
