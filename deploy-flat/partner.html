@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowHub — 通路建立專屬報價連結</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --blue:#2563EB;--blue-light:#EFF6FF;--blue-dark:#1D4ED8;
+    --green:#059669;--green-light:#ECFDF5;
+    --red:#DC2626;--amber:#D97706;
+    --gray-50:#F9FAFB;--gray-100:#F3F4F6;--gray-200:#E5E7EB;
+    --gray-300:#D1D5DB;--gray-400:#9CA3AF;--gray-500:#6B7280;
+    --gray-700:#374151;--gray-900:#111827;
+    --radius:10px;--radius-sm:6px;--radius-full:9999px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:#F0F4F8;font-family:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;color:var(--gray-900)}
+  body{min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:24px 16px 60px}
+  .card{background:#fff;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.06);width:100%;max-width:560px;padding:28px 24px}
+  h1{font-size:22px;font-weight:800;color:var(--gray-900);margin-bottom:4px}
+  .sub{font-size:13px;color:var(--gray-500);margin-bottom:20px}
+  .trust-box{background:var(--blue-light);border:1px solid #DBEAFE;border-radius:var(--radius);padding:12px 14px;margin-bottom:20px;font-size:12.5px;color:#1E40AF;line-height:1.7}
+  .trust-box strong{color:#1E3A8A}
+  .field{margin-bottom:14px}
+  .fl{font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:5px;display:flex;align-items:center;gap:6px;letter-spacing:.02em}
+  .req{color:var(--red);font-size:11px}
+  input[type=text],input[type=tel],input[type=number],select{
+    width:100%;height:44px;padding:0 12px;
+    border:1.5px solid var(--gray-200);border-radius:var(--radius-sm);
+    font-size:14px;background:#fff;color:var(--gray-900);
+    font-family:inherit;transition:border-color .15s,box-shadow .15s;outline:none
+  }
+  input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+  select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239CA3AF'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .divider{font-size:11px;font-weight:700;color:var(--gray-400);margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--gray-200);letter-spacing:.1em;text-transform:uppercase}
+
+  .period-row{display:grid;grid-template-columns:1fr 1.4fr 36px;gap:8px;align-items:end;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px}
+  .period-row .fl{margin-bottom:4px}
+  .del-btn{background:transparent;border:none;font-size:18px;color:var(--gray-400);cursor:pointer;padding:0;height:44px;line-height:1}
+  .del-btn:hover{color:var(--red)}
+  .add-btn{width:100%;padding:12px;border:1.5px dashed var(--gray-300);border-radius:var(--radius-sm);background:transparent;font-size:13px;font-weight:600;color:var(--gray-500);cursor:pointer;font-family:inherit;transition:all .15s}
+  .add-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-light)}
+
+  .btn-main{width:100%;padding:14px;background:var(--blue);border:none;border-radius:var(--radius-sm);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;box-shadow:0 2px 8px rgba(37,99,235,.25);margin-top:10px}
+  .btn-main:hover{background:var(--blue-dark);box-shadow:0 4px 12px rgba(37,99,235,.35)}
+  .btn-main:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+
+  .result{display:none;margin-top:22px;background:var(--green-light);border:1.5px solid #A7F3D0;border-radius:var(--radius);padding:18px 16px}
+  .result.show{display:block}
+  .result-title{font-size:14px;font-weight:800;color:#065F46;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .result-url{background:#fff;border:1.5px solid #A7F3D0;border-radius:var(--radius-sm);padding:12px;font-size:13px;color:var(--gray-900);word-break:break-all;margin-bottom:10px;font-family:'SFMono-Regular',Menlo,monospace;line-height:1.5}
+  .copy-btn{width:100%;padding:12px;background:var(--green);border:none;border-radius:var(--radius-sm);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:6px}
+  .copy-btn:hover{background:#047857}
+  .copy-btn.copied{background:#065F46}
+  .open-link{display:block;text-align:center;padding:11px;background:#fff;border:1.5px solid #A7F3D0;border-radius:var(--radius-sm);color:#065F46;font-size:13px;font-weight:700;text-decoration:none;margin-top:6px}
+
+  .err{background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;padding:12px;border-radius:var(--radius-sm);font-size:13px;margin-top:10px;display:none}
+  .err.show{display:block}
+
+  @media(max-width:400px){
+    .grid2{grid-template-columns:1fr}
+    .period-row{grid-template-columns:1fr 1fr 36px}
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📋 建立專屬報價連結</h1>
+  <div class="sub">通路專用 · 填寫後產生客戶專屬申請連結</div>
+
+  <div class="trust-box">
+    <strong>💡 使用說明</strong><br>
+    填完客戶基本資料與期數方案後，系統會產生一組短網址。<br>
+    將連結傳給客戶，客戶開啟後只需填寫信用與財務評分資料，送出後自動進入後台並通知對應通路群組。
+  </div>
+
+  <div class="divider">通路設定</div>
+  <div class="field">
+    <div class="fl">所屬通路 <span class="req">*</span></div>
+    <select id="channel">
+      <option value="FlowPay">FlowPay（總公司）</option>
+      <option value="e01">e01 — 得人疼企業社</option>
+      <option value="c02">c02 — 榮鑫國際商業有限公司</option>
+    </select>
+  </div>
+
+  <div class="divider">客戶基本資料</div>
+  <div class="grid2">
+    <div class="field">
+      <div class="fl">客戶姓名 <span class="req">*</span></div>
+      <input type="text" id="name" placeholder="王小明" maxlength="20">
+    </div>
+    <div class="field">
+      <div class="fl">客戶手機 <span class="req">*</span></div>
+      <input type="tel" id="phone" placeholder="0912345678" maxlength="12">
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="fl">申請金額（新台幣） <span class="req">*</span></div>
+    <input type="number" id="amount" placeholder="例如 60000" min="1000" step="1000">
+  </div>
+
+  <div class="field">
+    <div class="fl">備註 <span style="color:var(--gray-400);font-weight:500">（選填，僅通路看得到）</span></div>
+    <input type="text" id="note" placeholder="例如：客戶指定 24 期，月底前需撥款" maxlength="80">
+  </div>
+
+  <div class="divider">月付金選項（讓客戶選擇期數）</div>
+  <div id="periods-wrap"></div>
+  <button type="button" class="add-btn" id="addBtn">＋ 新增一組期數方案</button>
+
+  <button type="button" class="btn-main" id="genBtn">🔗 產生客戶專屬連結</button>
+
+  <div class="err" id="err"></div>
+
+  <div class="result" id="result">
+    <div class="result-title">✅ 連結已成功建立</div>
+    <div class="result-url" id="resultUrl"></div>
+    <button class="copy-btn" id="copyBtn">📋 複製連結</button>
+    <a class="open-link" id="openLink" target="_blank">→ 開啟預覽</a>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://zqwzmlythbcspoqfmamt.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxd3ptbHl0aGJjc3BvcWZtYW10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNzIwMzgsImV4cCI6MjA5MDc0ODAzOH0.64Qp1tqtZswhidf16QhX11_y614DDZHM4AUDKHFa-GM';
+
+const CH_MAP = {
+  'FlowPay': 'FlowPay',
+  'e01': '得人疼企業社',
+  'c02': '榮鑫國際商業有限公司'
+};
+
+// 期數列表 state
+let periods = [
+  {periods: 12, monthly: ''},
+  {periods: 18, monthly: ''},
+  {periods: 24, monthly: ''}
+];
+
+function renderPeriods(){
+  const wrap = document.getElementById('periods-wrap');
+  wrap.innerHTML = periods.map((p, i) => `
+    <div class="period-row">
+      <div>
+        <div class="fl">期數</div>
+        <input type="number" min="1" max="60" value="${p.periods||''}"
+          placeholder="12" onchange="periods[${i}].periods=parseInt(this.value)||0">
+      </div>
+      <div>
+        <div class="fl">月付金 NT$</div>
+        <input type="number" min="0" step="100" value="${p.monthly||''}"
+          placeholder="5000" onchange="periods[${i}].monthly=parseInt(this.value)||0">
+      </div>
+      <button type="button" class="del-btn" onclick="removePeriod(${i})"
+        ${periods.length<=1?'disabled style="opacity:.3;cursor:not-allowed"':''}>✕</button>
+    </div>
+  `).join('');
+}
+
+function removePeriod(i){
+  if(periods.length<=1) return;
+  periods.splice(i,1);
+  renderPeriods();
+}
+
+document.getElementById('addBtn').onclick = () => {
+  if(periods.length>=6){ showErr('最多只能設定 6 組期數方案'); return; }
+  periods.push({periods: 0, monthly: ''});
+  renderPeriods();
+};
+
+function showErr(msg){
+  const el = document.getElementById('err');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 4500);
+}
+
+// 產生 6 碼短碼（去除易混淆字元）
+function genShortCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c = '';
+  for(let i=0;i<6;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+
+function validPhone(p){
+  return /^09\d{8}$/.test(String(p||'').replace(/[-\s]/g,''));
+}
+
+async function insertQuote(payload){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/quotes`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(payload)
+  });
+  return res;
+}
+
+document.getElementById('genBtn').onclick = async () => {
+  const btn = document.getElementById('genBtn');
+  document.getElementById('err').classList.remove('show');
+
+  const ch = document.getElementById('channel').value;
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const amount = parseInt(document.getElementById('amount').value)||0;
+  const note = document.getElementById('note').value.trim();
+
+  if(!name){ showErr('請輸入客戶姓名'); return; }
+  if(!validPhone(phone)){ showErr('請輸入正確手機號碼（09 開頭共 10 碼）'); return; }
+  if(!amount || amount<1000){ showErr('請輸入合理的申請金額'); return; }
+
+  const validPeriods = periods.filter(p => p.periods>0 && p.monthly>0);
+  if(validPeriods.length<1){ showErr('請至少設定 1 組有效的期數方案'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '建立中...';
+
+  // 產生短碼、送出，遇到衝突自動重試
+  let code = '';
+  let res;
+  for(let attempt=0; attempt<5; attempt++){
+    code = genShortCode();
+    res = await insertQuote({
+      short_code: code,
+      channel: ch,
+      company_name: CH_MAP[ch] || ch,
+      customer_name: name,
+      customer_phone: phone,
+      amount: amount,
+      periods: validPeriods,
+      note: note || null
+    });
+    if(res.ok) break;
+    // unique conflict → retry
+    if(res.status !== 409) break;
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🔗 產生客戶專屬連結';
+
+  if(!res.ok){
+    const t = await res.text().catch(()=> '');
+    showErr('建立失敗（' + res.status + '）：請確認 Supabase quotes 表已建立，或聯繫管理員。' + (t?' 詳細：'+t.slice(0,200):''));
+    return;
+  }
+
+  const url = `${window.location.origin}/offer?q=${code}`;
+  document.getElementById('resultUrl').textContent = url;
+  document.getElementById('openLink').href = url;
+  document.getElementById('result').classList.add('show');
+  document.getElementById('result').scrollIntoView({behavior:'smooth', block:'center'});
+};
+
+document.getElementById('copyBtn').onclick = async () => {
+  const url = document.getElementById('resultUrl').textContent;
+  try{
+    await navigator.clipboard.writeText(url);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ 已複製';
+    btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='📋 複製連結'; btn.classList.remove('copied'); }, 2000);
+  }catch(e){
+    showErr('無法自動複製，請手動選取連結');
+  }
+};
+
+renderPeriods();
+</script>
+</body>
+</html>
