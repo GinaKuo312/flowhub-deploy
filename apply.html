@@ -766,7 +766,7 @@ function canNext(){
     if(!S.reg_addr||!S.reg_addr.trim()) return false; // 戶籍地址必填
     if(!S.company.trim()) return false;
     if(!S.income) return false; // 月薪必填
-    if(!S.salary_type) return false; // 薪資方式必填
+    if(!S.tenure) return false; if(!S.salary_type) return false; // 薪資方式必填
     return true;
   }
   if(cur===2){
